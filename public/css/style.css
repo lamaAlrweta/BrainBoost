@@ -3,7 +3,7 @@
    ======================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Droid+Arabic+Kufi&display=swap');
 
 * {
   margin: 0;
@@ -47,7 +47,7 @@ body {
 
 /* RTL Support */
 [dir="rtl"] {
-  font-family: 'Tajawal', 'Inter', -apple-system, sans-serif;
+  font-family: 'Droid Arabic Kufi', 'Inter', -apple-system, sans-serif;
   text-align: right;
   line-height: 1.7;
 }
@@ -156,7 +156,7 @@ body {
 [dir="rtl"] textarea,
 [dir="rtl"] input,
 [dir="rtl"] select {
-  font-family: 'Tajawal', 'Inter', -apple-system, sans-serif;
+  font-family: 'Droid Arabic Kufi', 'Inter', -apple-system, sans-serif;
   text-align: right;
 }
 
@@ -171,7 +171,7 @@ body {
 [dir="rtl"] .solution-text {
   text-align: right;
   direction: rtl;
-  font-family: 'Tajawal', 'Inter', -apple-system, sans-serif;
+  font-family: 'Droid Arabic Kufi', 'Inter', -apple-system, sans-serif;
   line-height: 1.9;
 }
 
