@@ -3,6 +3,7 @@
    ======================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
 
 * {
   margin: 0;
@@ -46,17 +47,76 @@ body {
 
 /* RTL Support */
 [dir="rtl"] {
+  font-family: 'Tajawal', 'Inter', -apple-system, sans-serif;
   text-align: right;
+  line-height: 1.7;
 }
 
-[dir="rtl"] .step-card,
+[dir="rtl"] .hero {
+  text-align: center;
+}
+
+[dir="rtl"] .hero-subtitle {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.8;
+}
+
+[dir="rtl"] .hero-desc {
+  font-size: 17px;
+  line-height: 1.9;
+  font-weight: 500;
+}
+
+[dir="rtl"] .hero-badge {
+  font-size: 13px;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+
+[dir="rtl"] .how-it-works h2 {
+  font-size: 32px;
+  font-weight: 800;
+  text-align: center;
+}
+
+[dir="rtl"] .step-card {
+  text-align: center;
+}
+
+[dir="rtl"] .step-card h3 {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+[dir="rtl"] .step-card p {
+  font-size: 15px;
+  line-height: 1.7;
+  font-weight: 500;
+}
+
 [dir="rtl"] .option-btn,
 [dir="rtl"] .form-group {
   text-align: right;
 }
 
+[dir="rtl"] .feature {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+[dir="rtl"] .feature h3 {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+[dir="rtl"] .feature p {
+  font-size: 14px;
+  line-height: 1.7;
+  font-weight: 500;
+}
+
 [dir="rtl"] .boss-info,
-[dir="rtl"] .feature,
 [dir="rtl"] .stat,
 [dir="rtl"] .strike-input-group {
   flex-direction: row-reverse;
@@ -72,6 +132,47 @@ body {
 
 [dir="rtl"] .stats-bar {
   flex-direction: row-reverse;
+}
+
+[dir="rtl"] .cta-button {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+[dir="rtl"] .landing-footer {
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+}
+
+[dir="rtl"] .input-card-title {
+  font-weight: 800;
+}
+
+[dir="rtl"] .input-desc {
+  font-weight: 500;
+}
+
+[dir="rtl"] textarea,
+[dir="rtl"] input,
+[dir="rtl"] select {
+  font-family: 'Tajawal', 'Inter', -apple-system, sans-serif;
+  text-align: right;
+}
+
+[dir="rtl"] .subject-chips {
+  direction: rtl;
+}
+
+[dir="rtl"] .upload-zone {
+  text-align: center;
+}
+
+[dir="rtl"] .solution-text {
+  text-align: right;
+  direction: rtl;
+  font-family: 'Tajawal', 'Inter', -apple-system, sans-serif;
+  line-height: 1.9;
 }
 
 /* Language Toggle */
@@ -733,7 +834,7 @@ body {
 }
 
 .custom-select-option.selected::after {
-  content: '✓';
+  content: '‚úì';
   color: var(--primary);
   font-weight: 700;
 }
