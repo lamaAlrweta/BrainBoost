@@ -4,6 +4,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Droid+Arabic+Kufi&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
 
 * {
   margin: 0;
@@ -57,24 +58,29 @@ body {
 }
 
 [dir="rtl"] .hero-subtitle {
+  font-family: 'Droid Arabic Kufi', sans-serif;
   font-size: 24px;
   font-weight: 700;
   line-height: 1.8;
 }
 
 [dir="rtl"] .hero-desc {
-  font-size: 17px;
-  line-height: 1.9;
-  font-weight: 500;
+  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  font-size: 16px;
+  line-height: 2;
+  font-weight: 400;
+  color: #4B5563;
 }
 
 [dir="rtl"] .hero-badge {
+  font-family: 'Droid Arabic Kufi', sans-serif;
   font-size: 13px;
   letter-spacing: 0;
   font-weight: 700;
 }
 
 [dir="rtl"] .how-it-works h2 {
+  font-family: 'Droid Arabic Kufi', sans-serif;
   font-size: 32px;
   font-weight: 800;
   text-align: center;
@@ -85,14 +91,17 @@ body {
 }
 
 [dir="rtl"] .step-card h3 {
+  font-family: 'Droid Arabic Kufi', sans-serif;
   font-size: 18px;
   font-weight: 800;
 }
 
 [dir="rtl"] .step-card p {
+  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
   font-size: 15px;
-  line-height: 1.7;
-  font-weight: 500;
+  line-height: 1.9;
+  font-weight: 400;
+  color: #4B5563;
 }
 
 [dir="rtl"] .option-btn,
@@ -105,15 +114,23 @@ body {
   text-align: right;
 }
 
+[dir="rtl"] .feature > div {
+  flex: 1;
+  min-width: 0;
+}
+
 [dir="rtl"] .feature h3 {
+  font-family: 'Droid Arabic Kufi', sans-serif;
   font-size: 17px;
   font-weight: 800;
 }
 
 [dir="rtl"] .feature p {
+  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
   font-size: 14px;
-  line-height: 1.7;
-  font-weight: 500;
+  line-height: 1.9;
+  font-weight: 400;
+  color: #4B5563;
 }
 
 [dir="rtl"] .boss-info,
@@ -140,9 +157,12 @@ body {
 }
 
 [dir="rtl"] .landing-footer {
+  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 400;
   text-align: center;
+  color: #4B5563;
+  line-height: 1.9;
 }
 
 [dir="rtl"] .input-card-title {
@@ -150,13 +170,16 @@ body {
 }
 
 [dir="rtl"] .input-desc {
-  font-weight: 500;
+  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  font-weight: 400;
+  color: #4B5563;
+  line-height: 1.9;
 }
 
 [dir="rtl"] textarea,
 [dir="rtl"] input,
 [dir="rtl"] select {
-  font-family: 'Droid Arabic Kufi', 'Inter', -apple-system, sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
   text-align: right;
 }
 
@@ -171,8 +194,9 @@ body {
 [dir="rtl"] .solution-text {
   text-align: right;
   direction: rtl;
-  font-family: 'Droid Arabic Kufi', 'Inter', -apple-system, sans-serif;
-  line-height: 1.9;
+  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  line-height: 2;
+  color: #4B5563;
 }
 
 /* Language Toggle */
@@ -834,7 +858,7 @@ body {
 }
 
 .custom-select-option.selected::after {
-  content: '‚úì';
+  content: 'âÃºÃ¬';
   color: var(--primary);
   font-weight: 700;
 }
