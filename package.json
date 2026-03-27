@@ -1,0 +1,15 @@
+{
+  "name": "brainboost",
+  "version": "1.0.0",
+  "description": "Homework helper that makes you think before you get answers",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}

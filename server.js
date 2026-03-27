@@ -1,0 +1,176 @@
+require('dotenv').config({ path: require('path').join(__dirname, '.env'), override: true });
+const express = require('express');
+const Anthropic = require('@anthropic-ai/sdk');
+const path = require('path');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json({ limit: '20mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Build the user message with optional images for Claude Vision
+function buildUserMessage(question, subject, images) {
+  const content = [];
+
+  // Add images first so Claude can see them
+  if (images && images.length > 0) {
+    for (const img of images) {
+      content.push({
+        type: 'image',
+        source: {
+          type: 'base64',
+          media_type: img.type,
+          data: img.data
+        }
+      });
+    }
+  }
+
+  // Add the text question
+  const textParts = [`Subject: ${subject || 'General'}`];
+  if (question) {
+    textParts.push(`Homework question: ${question}`);
+  } else {
+    textParts.push('Please look at the attached image(s) and solve the homework question shown.');
+  }
+  content.push({ type: 'text', text: textParts.join('\n') });
+
+  return content;
+}
+
+// Check if API key is configured
+const hasApiKey = process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'your_api_key_here';
+
+let anthropic;
+if (hasApiKey) {
+  anthropic = new Anthropic.default({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
+
+// API status endpoint
+app.get('/api/status', (req, res) => {
+  res.json({ hasApiKey, mode: hasApiKey ? 'live' : 'demo' });
+});
+
+// Generate boss battle rounds for a homework question
+app.post('/api/generate-battle', async (req, res) => {
+  const { question, subject, images } = req.body;
+
+  if (!question && (!images || images.length === 0)) {
+    return res.status(400).json({ error: 'Question or image is required' });
+  }
+
+  // Demo mode — return sample battle data
+  if (!hasApiKey) {
+    return res.json(getDemoBattle(question, subject));
+  }
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      system: `You are BrainBoost, a homework tutor that teaches through game-like challenges.
+You MUST respond with valid JSON only — no markdown, no extra text.
+
+Given a homework question, generate a "Boss Battle" with 3 rounds that teach the student the concepts needed to solve it.
+
+IMPORTANT RULES:
+- Round 3 MUST be an easy multiple choice question (NOT an essay or open-ended). Make it simple enough that a student who paid attention in rounds 1 and 2 will get it right and feel proud.
+- The fullSolution MUST start with the CLEAR DIRECT ANSWER to the homework question (e.g., "Answer: c. alleles"), THEN give a short explanation after.
+- If the student mentions an attached image, do your best to answer based on the text description they provide.
+
+Respond in this exact JSON format:
+{
+  "bossName": "A fun, creative boss name related to the topic (e.g., 'The Fraction Phantom', 'Sir Syntax Error')",
+  "bossEmoji": "One emoji that represents the boss",
+  "round1": {
+    "type": "quick_draw",
+    "question": "A multiple choice question about a KEY CONCEPT needed to solve the homework",
+    "options": ["A", "B", "C", "D"],
+    "correctIndex": 0,
+    "hint": "A one-line hint if they get it wrong"
+  },
+  "round2": {
+    "type": "true_false_blitz",
+    "statements": [
+      { "text": "A true or false statement about a concept needed to solve this problem", "isTrue": true },
+      { "text": "Another true or false statement (mix true and false)", "isTrue": false },
+      { "text": "A third true or false statement", "isTrue": true }
+    ]
+  },
+  "round3": {
+    "type": "final_strike_mc",
+    "question": "An EASY multiple choice question directly related to the homework answer. The student should feel confident answering this.",
+    "options": ["A", "B", "C", "D"],
+    "correctIndex": 0,
+    "hint": "A one-line hint if they get it wrong"
+  },
+  "fullSolution": "ANSWER: [the clear, direct answer to the homework question]\\n\\n[Then a short 2-3 sentence explanation of WHY this is the answer]"
+}`,
+      messages: [
+        {
+          role: 'user',
+          content: buildUserMessage(question, subject, images)
+        }
+      ]
+    });
+
+    const text = message.content[0].text;
+    const battle = JSON.parse(text);
+    res.json(battle);
+  } catch (error) {
+    console.error('API Error:', error.message);
+    res.status(500).json({ error: 'Failed to generate battle. Check your API key.' });
+  }
+});
+
+// Demo battle data for when no API key is set
+function getDemoBattle(question, subject) {
+  return {
+    demo: true,
+    bossName: "The Demo Dragon",
+    bossEmoji: "🐉",
+    round1: {
+      type: "quick_draw",
+      question: "This is a demo! Which of these is the correct approach to start solving this problem?",
+      options: [
+        "Break it down into smaller parts",
+        "Guess randomly",
+        "Skip it entirely",
+        "Copy from the internet"
+      ],
+      correctIndex: 0,
+      hint: "Think about how you'd eat an elephant — one bite at a time!"
+    },
+    round2: {
+      type: "true_false_blitz",
+      statements: [
+        { text: "Breaking a problem into smaller parts makes it easier to solve", isTrue: true },
+        { text: "You should always start solving without reading the full question", isTrue: false },
+        { text: "Understanding key concepts helps you solve problems faster", isTrue: true }
+      ]
+    },
+    round3: {
+      type: "final_strike_mc",
+      question: "What is the FIRST step to solving any homework problem?",
+      options: [
+        "Read and understand the question",
+        "Guess the answer immediately",
+        "Skip it and move on",
+        "Copy from a friend"
+      ],
+      correctIndex: 0,
+      hint: "Always start by understanding what's being asked!"
+    },
+    fullSolution: "🎮 This is DEMO MODE! To get real AI-powered battles, add your Anthropic API key to the .env file.\n\nGet your key at: https://console.anthropic.com/\n\nYour original question was: \"" + question + "\""
+  };
+}
+
+app.listen(PORT, () => {
+  console.log(`\n🧠 BrainBoost is running at http://localhost:${PORT}`);
+  console.log(`📡 Mode: ${hasApiKey ? '🟢 LIVE (Claude API)' : '🟡 DEMO (no API key)'}`);
+  if (!hasApiKey) {
+    console.log(`\n💡 To enable AI: add your API key to .env`);
+    console.log(`   Get one at: https://console.anthropic.com/\n`);
+  }
+});
