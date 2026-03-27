@@ -60,17 +60,19 @@ app.post('/api/generate-battle', async (req, res) => {
     return res.status(400).json({ error: 'Question or image is required' });
   }
 
-  // Demo mode — return sample battle data
+  // Demo mode â return sample battle data
   if (!hasApiKey) {
     return res.json(getDemoBattle(question, subject));
   }
 
-  try {
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      system: `You are BrainBoost, a homework tutor that teaches through game-like challenges.
-You MUST respond with valid JSON only — no markdown, no extra text.
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const message = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        system: `You are BrainBoost, a homework tutor that teaches through game-like challenges.
+You MUST respond with valid JSON only â no markdown, no extra text.
 
 Given a homework question, generate a "Boss Battle" with 3 rounds that teach the student the concepts needed to solve it.
 
@@ -107,20 +109,34 @@ Respond in this exact JSON format:
   },
   "fullSolution": "ANSWER: [the clear, direct answer to the homework question]\\n\\n[Then a short 2-3 sentence explanation of WHY this is the answer]"
 }`,
-      messages: [
-        {
-          role: 'user',
-          content: buildUserMessage(question, subject, images)
-        }
-      ]
-    });
+        messages: [
+          {
+            role: 'user',
+            content: buildUserMessage(question, subject, images)
+          }
+        ]
+      });
 
-    const text = message.content[0].text;
-    const battle = JSON.parse(text);
-    res.json(battle);
-  } catch (error) {
-    console.error('API Error:', error.message);
-    res.status(500).json({ error: 'Failed to generate battle. Check your API key.' });
+      const text = message.content[0].text;
+      const battle = JSON.parse(text);
+      return res.json(battle);
+    } catch (error) {
+      const status = error.status || error.statusCode || 0;
+      console.error(`API Error (attempt ${attempt}/${maxRetries}):`, status, error.message);
+
+      // Retry on overloaded (529) or rate limit (429) or server errors (500+)
+      if ((status === 529 || status === 429 || status >= 500) && attempt < maxRetries) {
+        const waitTime = attempt * 2000; // 2s, 4s
+        console.log(`Retrying in ${waitTime / 1000}s...`);
+        await new Promise(r => setTimeout(r, waitTime));
+        continue;
+      }
+
+      if (status === 529) {
+        return res.status(503).json({ error: 'AI servers are busy right now. Please wait a moment and try again.' });
+      }
+      return res.status(500).json({ error: 'Failed to generate battle. Please try again.' });
+    }
   }
 });
 
@@ -129,7 +145,7 @@ function getDemoBattle(question, subject) {
   return {
     demo: true,
     bossName: "The Demo Dragon",
-    bossEmoji: "🐉",
+    bossEmoji: "ð",
     round1: {
       type: "quick_draw",
       question: "This is a demo! Which of these is the correct approach to start solving this problem?",
@@ -140,7 +156,7 @@ function getDemoBattle(question, subject) {
         "Copy from the internet"
       ],
       correctIndex: 0,
-      hint: "Think about how you'd eat an elephant — one bite at a time!"
+      hint: "Think about how you'd eat an elephant â one bite at a time!"
     },
     round2: {
       type: "true_false_blitz",
@@ -162,15 +178,15 @@ function getDemoBattle(question, subject) {
       correctIndex: 0,
       hint: "Always start by understanding what's being asked!"
     },
-    fullSolution: "🎮 This is DEMO MODE! To get real AI-powered battles, add your Anthropic API key to the .env file.\n\nGet your key at: https://console.anthropic.com/\n\nYour original question was: \"" + question + "\""
+    fullSolution: "ð® This is DEMO MODE! To get real AI-powered battles, add your Anthropic API key to the .env file.\n\nGet your key at: https://console.anthropic.com/\n\nYour original question was: \"" + question + "\""
   };
 }
 
 app.listen(PORT, () => {
-  console.log(`\n🧠 BrainBoost is running at http://localhost:${PORT}`);
-  console.log(`📡 Mode: ${hasApiKey ? '🟢 LIVE (Claude API)' : '🟡 DEMO (no API key)'}`);
+  console.log(`\nð§  BrainBoost is running at http://localhost:${PORT}`);
+  console.log(`ð¡ Mode: ${hasApiKey ? 'ð¢ LIVE (Claude API)' : 'ð¡ DEMO (no API key)'}`);
   if (!hasApiKey) {
-    console.log(`\n💡 To enable AI: add your API key to .env`);
+    console.log(`\nð¡ To enable AI: add your API key to .env`);
     console.log(`   Get one at: https://console.anthropic.com/\n`);
   }
 });
