@@ -11,18 +11,6 @@ const I18n = (() => {
       hero_subtitle: 'Stop copying. Start <strong>defeating</strong> your homework.',
       hero_desc: 'Every homework question is a Boss Battle. Fight through 3 quick rounds, learn the concepts, and unlock the answer. Earn points. Build streaks. Become a Brain Lord.',
       cta_start: 'Start Battling',
-// BrainBoost - Internationalization (EN/AR)
-// ========================================
-
-const I18n = (() => {
-  const STORAGE_KEY = 'brainboost_lang';
-
-  const translations = {
-    en: {
-      hero_badge: 'NEW WAY TO STUDY',
-      hero_subtitle: 'Stop copying. Start <strong>defeating</strong> your homework.',
-      hero_desc: 'Every homework question is a Boss Battle. Fight through 3 quick rounds, learn the concepts, and unlock the answer. Earn points. Build streaks. Become a Brain Lord.',
-      cta_start: 'Start Battling',
       how_title: 'How It Works',
       step1_title: 'Paste Your Question',
       step1_desc: 'Drop in any homework question. Math, science, English â anything.',
