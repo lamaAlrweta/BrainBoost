@@ -15,31 +15,31 @@
     <div class="top-bar-right">
       <div class="stats-bar">
         <div class="stat" id="points-display">
-          <span class="stat-icon">⭐</span>
+          <span class="stat-icon">â­</span>
           <span class="stat-value" id="total-points">0</span>
           <span class="stat-label" data-i18n="pts">pts</span>
         </div>
         <div class="stat" id="streak-display">
-          <span class="stat-icon" id="streak-icon">🔥</span>
+          <span class="stat-icon" id="streak-icon">ð¥</span>
           <span class="stat-value" id="streak-count">0</span>
           <span class="stat-label" data-i18n="streak">streak</span>
         </div>
         <div class="stat" id="title-display">
-          <span class="stat-icon">🏅</span>
+          <span class="stat-icon">ð</span>
           <span class="stat-value" id="player-title">Rookie</span>
         </div>
       </div>
       <!-- Language Toggle -->
       <div class="lang-toggle-inline">
         <button class="lang-btn active" data-lang="en">EN</button>
-        <button class="lang-btn" data-lang="ar">عربي</button>
+        <button class="lang-btn" data-lang="ar">Ø¹Ø±Ø¨Ù</button>
       </div>
     </div>
   </nav>
 
   <!-- Mode Banner -->
   <div class="mode-banner" id="mode-banner" style="display:none;">
-    🟡 <span data-i18n="demo_mode">Demo Mode</span> — <a href="https://console.anthropic.com/" target="_blank" data-i18n="get_api_key">Get an API key</a> <span data-i18n="for_real_battles">for real AI battles</span>
+    ð¡ <span data-i18n="demo_mode">Demo Mode</span> â <a href="https://console.anthropic.com/" target="_blank" data-i18n="get_api_key">Get an API key</a> <span data-i18n="for_real_battles">for real AI battles</span>
   </div>
 
   <!-- Question Input Screen -->
@@ -73,7 +73,7 @@
           <div class="custom-select" id="subject-dropdown" style="display:none;">
             <div class="custom-select-trigger" id="subject-trigger">
               <span id="subject-selected-text">Math</span>
-              <span class="custom-select-arrow">▼</span>
+              <span class="custom-select-arrow">â¼</span>
             </div>
             <div class="custom-select-options" id="subject-options">
               <div class="custom-select-option selected" data-value="Math">Math</div>
@@ -95,8 +95,8 @@
               <span class="unified-divider-line"></span>
             </div>
             <div class="unified-upload-area" id="unified-upload-area">
-              <span class="unified-upload-icon">📷</span>
-              <span class="unified-upload-text">Drop a photo of your homework here, or <strong data-i18n="upload_browse">browse</strong></span>
+              <span class="unified-upload-icon">ð·</span>
+              <span class="unified-upload-text" data-i18n="upload_drag">Drop a photo of your homework here, or</span> <strong data-i18n="upload_browse">browse</strong>
             </div>
             <input type="file" id="file-input" accept="image/*,.pdf" multiple style="display:none;">
             <div class="upload-file-list" id="file-list"></div>
@@ -106,7 +106,7 @@
 
       <button class="battle-button" id="start-battle-btn">
         <span class="battle-button-text" data-i18n="start_battle">Start Boss Battle</span>
-        <span class="battle-button-icon">→</span>
+        <span class="battle-button-icon">â</span>
       </button>
     </div>
   </div>
@@ -124,7 +124,7 @@
   <div class="screen hidden" id="battle-screen">
     <div class="boss-header">
       <div class="boss-info">
-        <span class="boss-emoji" id="boss-emoji">🐉</span>
+        <span class="boss-emoji" id="boss-emoji">ð</span>
         <h2 class="boss-name" id="boss-name">Loading...</h2>
       </div>
       <div class="health-bar-container">
@@ -150,14 +150,14 @@
   <!-- Victory Screen -->
   <div class="screen hidden" id="victory-screen">
     <div class="victory-card">
-      <div class="victory-emoji">🏆</div>
+      <div class="victory-emoji">ð</div>
       <h1 class="victory-title" data-i18n="boss_defeated">BOSS DEFEATED!</h1>
       <div class="victory-stats" id="victory-stats"></div>
       <div class="solution-box" id="solution-box">
-        <h3>📖 <span data-i18n="full_solution">Full Solution</span></h3>
+        <h3>ð <span data-i18n="full_solution">Full Solution</span></h3>
         <div class="solution-text" id="solution-text"></div>
       </div>
-      <button class="battle-button" id="new-battle-btn">⚔️ <span data-i18n="next_battle">Next Battle</span></button>
+      <button class="battle-button" id="new-battle-btn">âï¸ <span data-i18n="next_battle">Next Battle</span></button>
     </div>
   </div>
 
