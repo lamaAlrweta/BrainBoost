@@ -65,7 +65,7 @@ body {
 }
 
 [dir="rtl"] .hero-desc {
-  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  font-family: 'Droid Arabic Kufi', sans-serif;
   font-size: 16px;
   line-height: 2;
   font-weight: 400;
@@ -97,7 +97,7 @@ body {
 }
 
 [dir="rtl"] .step-card p {
-  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  font-family: 'Droid Arabic Kufi', sans-serif;
   font-size: 15px;
   line-height: 1.9;
   font-weight: 400;
@@ -126,7 +126,7 @@ body {
 }
 
 [dir="rtl"] .feature p {
-  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  font-family: 'Droid Arabic Kufi', sans-serif;
   font-size: 14px;
   line-height: 1.9;
   font-weight: 400;
@@ -157,7 +157,7 @@ body {
 }
 
 [dir="rtl"] .landing-footer {
-  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  font-family: 'Droid Arabic Kufi', sans-serif;
   font-size: 15px;
   font-weight: 400;
   text-align: center;
@@ -170,7 +170,7 @@ body {
 }
 
 [dir="rtl"] .input-desc {
-  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  font-family: 'Droid Arabic Kufi', sans-serif;
   font-weight: 400;
   color: #4B5563;
   line-height: 1.9;
@@ -179,7 +179,7 @@ body {
 [dir="rtl"] textarea,
 [dir="rtl"] input,
 [dir="rtl"] select {
-  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  font-family: 'Droid Arabic Kufi', sans-serif;
   text-align: right;
 }
 
@@ -194,7 +194,7 @@ body {
 [dir="rtl"] .solution-text {
   text-align: right;
   direction: rtl;
-  font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+  font-family: 'Droid Arabic Kufi', sans-serif;
   line-height: 2;
   color: #4B5563;
 }
@@ -858,7 +858,7 @@ body {
 }
 
 .custom-select-option.selected::after {
-  content: 'âÃºÃ¬';
+  content: 'Ã¢ÂÂÃÂºÃÂ¬';
   color: var(--primary);
   font-weight: 700;
 }
@@ -1535,7 +1535,7 @@ body {
   flex-wrap: wrap;
 }
 
-.v-stat {
+.b-stat {
   text-align: center;
 }
 
@@ -1793,7 +1793,7 @@ body {
   animation-delay: 0.4s;
 }
 
-.v-stat:nth-child(1) { animation: fadeSlideUp 0.4s ease both; animation-delay: 0.5s; }
+.b-stat:nth-child(1) { animation: fadeSlideUp 0.4s ease both; animation-delay: 0.5s; }
 .v-stat:nth-child(2) { animation: fadeSlideUp 0.4s ease both; animation-delay: 0.6s; }
 .v-stat:nth-child(3) { animation: fadeSlideUp 0.4s ease both; animation-delay: 0.7s; }
 
