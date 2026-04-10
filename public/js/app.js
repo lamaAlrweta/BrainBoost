@@ -281,10 +281,11 @@ const App = (() => {
         return;
       }
 
+      const lang = (typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en';
       const res = await fetch('/api/generate-battle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, subject, images }),
+        body: JSON.stringify({ question, subject, images, lang }),
       });
 
       const payload = await res.json().catch(() => ({}));

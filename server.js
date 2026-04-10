@@ -42,7 +42,7 @@ function extractJSON(text) {
 }
 
 // Build the user message with optional images for Claude Vision
-function buildUserMessage(question, subject, images) {
+function buildUserMessage(question, subject, images, lang) {
   const content = [];
 
   // Add images first so Claude can see them
@@ -62,7 +62,12 @@ function buildUserMessage(question, subject, images) {
   }
 
   // Add the text question
-  const textParts = [`Subject: ${subject || 'General'}`];
+  const isArabic = lang === 'ar';
+  const langInstruction = isArabic
+    ? 'IMPORTANT: The user interface language is Arabic. You MUST write ALL text fields in the JSON response (bossName, round questions, options, statements, hints, fullSolution) in Arabic, even if the homework question itself is written in English. Translate concepts into natural Arabic. Only keep proper nouns, formulas, numbers, chemical symbols and code in their original form.'
+    : 'IMPORTANT: The user interface language is English. Write ALL text fields in the JSON response in English.';
+
+  const textParts = [langInstruction, `Subject: ${subject || 'General'}`];
   if (question) {
     textParts.push(`Homework question: ${question}`);
   } else {
@@ -88,7 +93,8 @@ app.get('/api/status', (req, res) => {
 
 // Generate boss battle rounds for a homework question
 app.post('/api/generate-battle', async (req, res) => {
-  const { question, subject, images } = req.body;
+  const { question, subject, images, lang } = req.body;
+  const language = lang === 'ar' ? 'ar' : 'en';
 
   // Filter images to only supported types
   const validImages = (images || []).filter(img => ALLOWED_IMAGE_TYPES.includes(img.type));
@@ -133,6 +139,8 @@ IMPORTANT RULES:
 - Round 3 MUST be an easy multiple choice question (NOT an essay or open-ended). Make it simple enough that a student who paid attention in rounds 1 and 2 will get it right and feel proud.
 - The fullSolution MUST start with the CLEAR DIRECT ANSWER to the homework question (e.g., "Answer: c. alleles"), THEN give a short explanation after.
 - If an image is attached, read the homework question directly from the image and solve it.
+- AT LEAST ONE of the three rounds MUST frame its question around a concrete, everyday real-life scenario (cooking, sports, shopping, travel, phone/battery, pizza slices, etc.) so the student sees how the concept applies outside the textbook. Pick the round where a real-life example fits most naturally.
+- The language of ALL text fields in the JSON (bossName, questions, options, statements, hints, fullSolution) MUST match the user interface language specified in the user message, regardless of the language of the homework question itself.
 
 Respond in this exact JSON format:
 {
@@ -165,7 +173,7 @@ Respond in this exact JSON format:
         messages: [
           {
             role: 'user',
-            content: buildUserMessage(question, subject, validImages)
+            content: buildUserMessage(question, subject, validImages, language)
           }
         ]
       });
