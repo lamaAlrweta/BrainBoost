@@ -10,6 +10,10 @@ const App = (() => {
   let uploadedFiles = [];
   let selectedSubject = 'Math';
 
+  // Claude Vision only accepts these image types
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const MAX_IMAGE_BYTES = 4.5 * 1024 * 1024; // stay under Claude's 5 MB limit
+
   // Convert file to base64
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
@@ -21,6 +25,46 @@ const App = (() => {
       };
       reader.onerror = reject;
       reader.readAsDataURL(file);
+    });
+  }
+
+  // Resize an image file to fit within max dimension and re-encode as JPEG
+  function resizeImage(file, maxDim = 1600, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          const scale = maxDim / Math.max(width, height);
+          width = Math.round(width * scale);
+          height = Math.round(height * scale);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return reject(new Error('Failed to resize image'));
+            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve({
+              type: 'image/jpeg',
+              data: dataUrl.split(',')[1],
+              name: file.name.replace(/\.[^.]+$/, '') + '.jpg'
+            });
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Could not load image'));
+      };
+      img.src = url;
     });
   }
 
@@ -202,17 +246,39 @@ const App = (() => {
     currentRound = 0;
 
     try {
-      // Convert uploaded images to base64
+      // Convert uploaded images to base64, rejecting unsupported formats
       const images = [];
+      const rejected = [];
       for (const file of uploadedFiles) {
-        if (file.type.startsWith('image/')) {
-          const base64 = await fileToBase64(file);
-          images.push({
-            type: file.type,
-            data: base64,
-            name: file.name
-          });
+        if (!file.type.startsWith('image/')) {
+          rejected.push(file.name + ' (not an image)');
+          continue;
         }
+        if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+          rejected.push(file.name + ' (' + file.type + ' not supported — use JPG/PNG)');
+          continue;
+        }
+
+        let prepared;
+        // Resize large images so they fit under Claude's 5 MB limit
+        if (file.size > MAX_IMAGE_BYTES) {
+          try {
+            prepared = await resizeImage(file);
+          } catch (_) {
+            rejected.push(file.name + ' (could not resize)');
+            continue;
+          }
+        } else {
+          const base64 = await fileToBase64(file);
+          prepared = { type: file.type, data: base64, name: file.name };
+        }
+        images.push(prepared);
+      }
+
+      if (uploadedFiles.length > 0 && images.length === 0) {
+        alert('None of your uploaded files could be used:\n\n' + rejected.join('\n') + '\n\nPlease upload a JPG, PNG, GIF, or WebP image.');
+        showScreen('input');
+        return;
       }
 
       const res = await fetch('/api/generate-battle', {
@@ -221,13 +287,18 @@ const App = (() => {
         body: JSON.stringify({ question, subject, images }),
       });
 
-      if (!res.ok) throw new Error('API error');
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = payload.error || ('Server returned status ' + res.status);
+        throw new Error(msg);
+      }
 
-      battleData = await res.json();
+      battleData = payload;
       showScreen('battle');
       initBattle();
     } catch (err) {
-      alert('Failed to generate battle. Please try again.');
+      console.error('Battle generation failed:', err);
+      alert((err && err.message) ? err.message : 'Failed to generate battle. Please try again.');
       showScreen('input');
     }
   }

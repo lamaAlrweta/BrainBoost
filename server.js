@@ -6,8 +6,40 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json({ limit: '20mb' }));
+app.use(express.json({ limit: '25mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Claude Vision only accepts these image types
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+// Extract JSON from text that might be wrapped in markdown code fences
+function extractJSON(text) {
+  if (!text) throw new Error('Empty response from Claude');
+
+  // Try direct parse first
+  try {
+    return JSON.parse(text);
+  } catch (_) { /* fall through */ }
+
+  // Strip markdown code fences: ```json ... ``` or ``` ... ```
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  if (fenced) {
+    try {
+      return JSON.parse(fenced[1]);
+    } catch (_) { /* fall through */ }
+  }
+
+  // Extract first {...} block
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+  if (firstBrace >= 0 && lastBrace > firstBrace) {
+    try {
+      return JSON.parse(text.substring(firstBrace, lastBrace + 1));
+    } catch (_) { /* fall through */ }
+  }
+
+  throw new Error('Could not parse JSON from Claude response');
+}
 
 // Build the user message with optional images for Claude Vision
 function buildUserMessage(question, subject, images) {
@@ -16,6 +48,8 @@ function buildUserMessage(question, subject, images) {
   // Add images first so Claude can see them
   if (images && images.length > 0) {
     for (const img of images) {
+      // Skip unsupported media types (Claude only supports jpeg/png/gif/webp)
+      if (!ALLOWED_IMAGE_TYPES.includes(img.type)) continue;
       content.push({
         type: 'image',
         source: {
@@ -56,11 +90,30 @@ app.get('/api/status', (req, res) => {
 app.post('/api/generate-battle', async (req, res) => {
   const { question, subject, images } = req.body;
 
-  if (!question && (!images || images.length === 0)) {
-    return res.status(400).json({ error: 'Question or image is required' });
+  // Filter images to only supported types
+  const validImages = (images || []).filter(img => ALLOWED_IMAGE_TYPES.includes(img.type));
+  const rejectedImages = (images || []).filter(img => !ALLOWED_IMAGE_TYPES.includes(img.type));
+
+  if (!question && validImages.length === 0) {
+    if (rejectedImages.length > 0) {
+      return res.status(400).json({
+        error: 'Unsupported image format. Please upload a JPG, PNG, GIF, or WebP image (not HEIC or PDF).'
+      });
+    }
+    return res.status(400).json({ error: 'Please enter a question or upload an image.' });
   }
 
-  // Demo mode â return sample battle data
+  // Check image size (Claude limit is ~5 MB per image, base64 is ~1.33x larger)
+  for (const img of validImages) {
+    const approxBytes = (img.data || '').length * 0.75;
+    if (approxBytes > 5 * 1024 * 1024) {
+      return res.status(400).json({
+        error: 'Image is too large. Please upload an image smaller than 5 MB.'
+      });
+    }
+  }
+
+  // Demo mode - return sample battle data
   if (!hasApiKey) {
     return res.json(getDemoBattle(question, subject));
   }
@@ -72,14 +125,14 @@ app.post('/api/generate-battle', async (req, res) => {
         model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
         system: `You are BrainBoost, a homework tutor that teaches through game-like challenges.
-You MUST respond with valid JSON only â no markdown, no extra text.
+You MUST respond with valid JSON only - no markdown, no code fences, no extra text.
 
 Given a homework question, generate a "Boss Battle" with 3 rounds that teach the student the concepts needed to solve it.
 
 IMPORTANT RULES:
 - Round 3 MUST be an easy multiple choice question (NOT an essay or open-ended). Make it simple enough that a student who paid attention in rounds 1 and 2 will get it right and feel proud.
 - The fullSolution MUST start with the CLEAR DIRECT ANSWER to the homework question (e.g., "Answer: c. alleles"), THEN give a short explanation after.
-- If the student mentions an attached image, do your best to answer based on the text description they provide.
+- If an image is attached, read the homework question directly from the image and solve it.
 
 Respond in this exact JSON format:
 {
@@ -112,13 +165,13 @@ Respond in this exact JSON format:
         messages: [
           {
             role: 'user',
-            content: buildUserMessage(question, subject, images)
+            content: buildUserMessage(question, subject, validImages)
           }
         ]
       });
 
-      const text = message.content[0].text;
-      const battle = JSON.parse(text);
+      const text = message.content.find(c => c.type === 'text')?.text || message.content[0]?.text || '';
+      const battle = extractJSON(text);
       return res.json(battle);
     } catch (error) {
       const status = error.status || error.statusCode || 0;
@@ -135,7 +188,13 @@ Respond in this exact JSON format:
       if (status === 529) {
         return res.status(503).json({ error: 'AI servers are busy right now. Please wait a moment and try again.' });
       }
-      return res.status(500).json({ error: 'Failed to generate battle. Please try again.' });
+      if (status === 400) {
+        return res.status(400).json({ error: `Claude rejected the request: ${error.message}` });
+      }
+      if (status === 401 || status === 403) {
+        return res.status(500).json({ error: 'Server API key is invalid or missing.' });
+      }
+      return res.status(500).json({ error: error.message || 'Failed to generate battle. Please try again.' });
     }
   }
 });
@@ -145,7 +204,7 @@ function getDemoBattle(question, subject) {
   return {
     demo: true,
     bossName: "The Demo Dragon",
-    bossEmoji: "ð",
+    bossEmoji: "🐉",
     round1: {
       type: "quick_draw",
       question: "This is a demo! Which of these is the correct approach to start solving this problem?",
@@ -156,7 +215,7 @@ function getDemoBattle(question, subject) {
         "Copy from the internet"
       ],
       correctIndex: 0,
-      hint: "Think about how you'd eat an elephant â one bite at a time!"
+      hint: "Think about how you'd eat an elephant - one bite at a time!"
     },
     round2: {
       type: "true_false_blitz",
@@ -178,15 +237,15 @@ function getDemoBattle(question, subject) {
       correctIndex: 0,
       hint: "Always start by understanding what's being asked!"
     },
-    fullSolution: "ð® This is DEMO MODE! To get real AI-powered battles, add your Anthropic API key to the .env file.\n\nGet your key at: https://console.anthropic.com/\n\nYour original question was: \"" + question + "\""
+    fullSolution: "🎮 This is DEMO MODE! To get real AI-powered battles, add your Anthropic API key to the .env file.\n\nGet your key at: https://console.anthropic.com/\n\nYour original question was: \"" + (question || '(image only)') + "\""
   };
 }
 
 app.listen(PORT, () => {
-  console.log(`\nð§  BrainBoost is running at http://localhost:${PORT}`);
-  console.log(`ð¡ Mode: ${hasApiKey ? 'ð¢ LIVE (Claude API)' : 'ð¡ DEMO (no API key)'}`);
+  console.log(`\n🧠 BrainBoost is running at http://localhost:${PORT}`);
+  console.log(`💡 Mode: ${hasApiKey ? '🟢 LIVE (Claude API)' : '🟡 DEMO (no API key)'}`);
   if (!hasApiKey) {
-    console.log(`\nð¡ To enable AI: add your API key to .env`);
+    console.log(`\n💡 To enable AI: add your API key to .env`);
     console.log(`   Get one at: https://console.anthropic.com/\n`);
   }
 });
