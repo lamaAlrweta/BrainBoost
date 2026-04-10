@@ -858,7 +858,7 @@ body {
 }
 
 .custom-select-option.selected::after {
-  content: 'Ã¢ÂÂÃÂºÃÂ¬';
+  content: '✓';
   color: var(--primary);
   font-weight: 700;
 }
