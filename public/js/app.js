@@ -14,6 +14,14 @@ const App = (() => {
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
   const MAX_IMAGE_BYTES = 4.5 * 1024 * 1024; // stay under Claude's 5 MB limit
 
+  // Shortcut: look up a translation for the current UI language
+  function t(key) {
+    if (typeof I18n === 'undefined' || !I18n.translations) return key;
+    const lang = I18n.getCurrentLang ? I18n.getCurrentLang() : 'en';
+    const dict = I18n.translations[lang] || I18n.translations.en || {};
+    return dict[key] || (I18n.translations.en && I18n.translations.en[key]) || key;
+  }
+
   // Convert file to base64
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
@@ -251,11 +259,11 @@ const App = (() => {
       const rejected = [];
       for (const file of uploadedFiles) {
         if (!file.type.startsWith('image/')) {
-          rejected.push(file.name + ' (not an image)');
+          rejected.push(file.name + ' (' + t('err_not_image') + ')');
           continue;
         }
         if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-          rejected.push(file.name + ' (' + file.type + ' not supported — use JPG/PNG)');
+          rejected.push(file.name + ' (' + file.type + ' — ' + t('err_not_supported') + ')');
           continue;
         }
 
@@ -265,7 +273,7 @@ const App = (() => {
           try {
             prepared = await resizeImage(file);
           } catch (_) {
-            rejected.push(file.name + ' (could not resize)');
+            rejected.push(file.name + ' (' + t('err_could_not_resize') + ')');
             continue;
           }
         } else {
@@ -276,7 +284,7 @@ const App = (() => {
       }
 
       if (uploadedFiles.length > 0 && images.length === 0) {
-        alert('None of your uploaded files could be used:\n\n' + rejected.join('\n') + '\n\nPlease upload a JPG, PNG, GIF, or WebP image.');
+        alert(t('err_no_files_usable') + '\n\n' + rejected.join('\n') + '\n\n' + t('err_upload_jpg'));
         showScreen('input');
         return;
       }
@@ -290,7 +298,7 @@ const App = (() => {
 
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const msg = payload.error || ('Server returned status ' + res.status);
+        const msg = payload.error || (t('err_generic') + ' (' + res.status + ')');
         throw new Error(msg);
       }
 
@@ -299,7 +307,7 @@ const App = (() => {
       initBattle();
     } catch (err) {
       console.error('Battle generation failed:', err);
-      alert((err && err.message) ? err.message : 'Failed to generate battle. Please try again.');
+      alert((err && err.message) ? err.message : t('err_generic'));
       showScreen('input');
     }
   }
@@ -358,8 +366,8 @@ const App = (() => {
   function renderRound1() {
     const r = battleData.round1;
     els.roundContent.innerHTML = `
-      <div class="round-label">ROUND 1</div>
-      <div class="round-title">⚡ Quick Draw</div>
+      <div class="round-label">${t('round_label')} 1</div>
+      <div class="round-title">${t('round1_title')}</div>
       <div class="round-question">${escapeHtml(r.question)}</div>
       <div class="options-grid" id="options-grid">
         ${r.options.map((opt, i) => `
@@ -390,7 +398,7 @@ const App = (() => {
       setTimeout(() => {
         const cont = document.createElement('button');
         cont.className = 'continue-btn';
-        cont.innerHTML = 'Next Round →';
+        cont.innerHTML = t('btn_next_round');
         cont.addEventListener('click', () => startRound(2));
         els.roundContent.appendChild(cont);
       }, 600);
@@ -401,7 +409,7 @@ const App = (() => {
       if (!els.roundContent.querySelector('.hint-box')) {
         const hint = document.createElement('div');
         hint.className = 'hint-box';
-        hint.textContent = '💡 ' + roundData.hint;
+        hint.textContent = t('hint_label') + ' ' + roundData.hint;
         els.roundContent.appendChild(hint);
       }
 
@@ -421,16 +429,16 @@ const App = (() => {
     blitzCorrect = 0;
 
     els.roundContent.innerHTML = `
-      <div class="round-label">ROUND 2</div>
-      <div class="round-title">⚡ True or False Blitz</div>
+      <div class="round-label">${t('round_label')} 2</div>
+      <div class="round-title">${t('round2_title')}</div>
       <div class="blitz-container">
         <div class="blitz-progress" id="blitz-progress">
           ${r.statements.map((_, i) => `<div class="blitz-pip ${i === 0 ? 'active' : ''}" id="pip-${i}"></div>`).join('')}
         </div>
         <div class="blitz-statement" id="blitz-statement">${escapeHtml(r.statements[0].text)}</div>
         <div class="blitz-buttons" id="blitz-buttons">
-          <button class="blitz-btn true-btn" id="blitz-true">✅ TRUE</button>
-          <button class="blitz-btn false-btn" id="blitz-false">❌ FALSE</button>
+          <button class="blitz-btn true-btn" id="blitz-true">${t('btn_true')}</button>
+          <button class="blitz-btn false-btn" id="blitz-false">${t('btn_false')}</button>
         </div>
         <div id="blitz-feedback"></div>
       </div>
@@ -460,7 +468,7 @@ const App = (() => {
       (playerAnswer ? trueBtn : falseBtn).classList.add('correct');
       pip.classList.remove('active');
       pip.classList.add('done-correct');
-      feedback.innerHTML = '<div class="blitz-result correct">Correct! 🎯</div>';
+      feedback.innerHTML = `<div class="blitz-result correct">${t('feedback_correct')}</div>`;
       Gamification.showPointsPopup(10);
       battlePoints += 10;
     } else {
@@ -468,8 +476,8 @@ const App = (() => {
       (playerAnswer ? trueBtn : falseBtn).classList.add('wrong');
       pip.classList.remove('active');
       pip.classList.add('done-wrong');
-      const rightAnswer = current.isTrue ? 'TRUE' : 'FALSE';
-      feedback.innerHTML = `<div class="blitz-result wrong">Wrong! The answer was ${rightAnswer}</div>`;
+      const rightAnswer = current.isTrue ? t('feedback_true') : t('feedback_false');
+      feedback.innerHTML = `<div class="blitz-result wrong">${t('feedback_wrong')} ${rightAnswer}</div>`;
     }
 
     blitzIndex++;
@@ -492,11 +500,11 @@ const App = (() => {
 
         els.roundContent.querySelector('.blitz-buttons').style.display = 'none';
         const score = `${blitzCorrect}/${statements.length}`;
-        feedback.innerHTML = `<div class="blitz-result correct" style="font-size:16px;padding:12px;">Blitz done! ${score} correct 🔥</div>`;
+        feedback.innerHTML = `<div class="blitz-result correct" style="font-size:16px;padding:12px;">${t('blitz_done')} ${score} ${t('blitz_correct_word')} 🔥</div>`;
 
         const cont = document.createElement('button');
         cont.className = 'continue-btn';
-        cont.innerHTML = 'Final Round →';
+        cont.innerHTML = t('btn_final_round');
         cont.addEventListener('click', () => startRound(3));
         els.roundContent.appendChild(cont);
       }
@@ -512,8 +520,8 @@ const App = (() => {
     // Support both old format (essay) and new format (multiple choice)
     if (r.type === 'final_strike_mc' && r.options) {
       els.roundContent.innerHTML = `
-        <div class="round-label">ROUND 3</div>
-        <div class="round-title">💥 Final Strike</div>
+        <div class="round-label">${t('round_label')} 3</div>
+        <div class="round-title">${t('round3_title')}</div>
         <div class="round-question">${escapeHtml(r.question)}</div>
         <div class="options-grid" id="strike-options">
           ${r.options.map((opt, i) => `
@@ -529,12 +537,12 @@ const App = (() => {
     } else {
       // Fallback for old essay format
       els.roundContent.innerHTML = `
-        <div class="round-label">ROUND 3</div>
-        <div class="round-title">💥 Final Strike</div>
+        <div class="round-label">${t('round_label')} 3</div>
+        <div class="round-title">${t('round3_title')}</div>
         <div class="round-question">${escapeHtml(r.challenge || r.question)}</div>
         <div class="strike-input-group">
-          <input type="text" class="strike-input" id="strike-input" placeholder="Your answer..." autocomplete="off">
-          <button class="strike-btn" id="strike-btn">⚔️ Strike!</button>
+          <input type="text" class="strike-input" id="strike-input" placeholder="${t('answer_placeholder')}" autocomplete="off">
+          <button class="strike-btn" id="strike-btn">${t('btn_strike')}</button>
         </div>
       `;
       document.getElementById('strike-btn').addEventListener('click', () => handleRound3Essay(r));
@@ -565,7 +573,7 @@ const App = (() => {
       if (!els.roundContent.querySelector('.hint-box')) {
         const hint = document.createElement('div');
         hint.className = 'hint-box';
-        hint.textContent = '💡 ' + roundData.hint;
+        hint.textContent = t('hint_label') + ' ' + roundData.hint;
         els.roundContent.appendChild(hint);
       }
 
@@ -605,7 +613,7 @@ const App = (() => {
       if (!els.roundContent.querySelector('.insight-box')) {
         const insight = document.createElement('div');
         insight.className = 'insight-box';
-        insight.textContent = '🔑 Key insight: ' + roundData.keyInsight;
+        insight.textContent = t('insight_label') + ' ' + roundData.keyInsight;
         els.roundContent.appendChild(insight);
       }
     }
@@ -624,19 +632,19 @@ const App = (() => {
     els.victoryStats.innerHTML = `
       <div class="v-stat">
         <div class="v-stat-value">${result.pointsEarned}</div>
-        <div class="v-stat-label">Points Earned</div>
+        <div class="v-stat-label">${t('points_earned')}</div>
       </div>
       <div class="v-stat">
         <div class="v-stat-value">${result.streak} 🔥</div>
-        <div class="v-stat-label">Win Streak</div>
+        <div class="v-stat-label">${t('win_streak')}</div>
       </div>
       <div class="v-stat">
         <div class="v-stat-value">${result.multiplier}x</div>
-        <div class="v-stat-label">Multiplier</div>
+        <div class="v-stat-label">${t('multiplier')}</div>
       </div>
-      ${isPerfect ? '<div class="v-stat"><div class="v-stat-value">💎</div><div class="v-stat-label">Perfect Kill!</div></div>' : ''}
+      ${isPerfect ? `<div class="v-stat"><div class="v-stat-value">💎</div><div class="v-stat-label">${t('perfect_kill')}</div></div>` : ''}
       ${result.newBadges.length > 0 ? result.newBadges.map(b =>
-        `<div class="v-stat"><div class="v-stat-value">${b.emoji}</div><div class="v-stat-label">NEW: ${b.name}</div></div>`
+        `<div class="v-stat"><div class="v-stat-value">${b.emoji}</div><div class="v-stat-label">${t('new_badge')}: ${escapeHtml(b.name)}</div></div>`
       ).join('') : ''}
     `;
 

@@ -57,6 +57,56 @@ const I18n = (() => {
       subj_geography: 'Geography',
       subj_cs: 'Computer Science',
       subj_other: 'Other',
+      // Round labels + dynamic UI
+      round_label: 'ROUND',
+      round1_title: '⚡ Quick Draw',
+      round2_title: '⚡ True or False Blitz',
+      round3_title: '💥 Final Strike',
+      btn_true: '✅ TRUE',
+      btn_false: '❌ FALSE',
+      btn_next_round: 'Next Round →',
+      btn_final_round: 'Final Round →',
+      btn_strike: '⚔️ Strike!',
+      answer_placeholder: 'Your answer...',
+      feedback_correct: 'Correct! 🎯',
+      feedback_wrong: 'Wrong! The answer was',
+      feedback_true: 'TRUE',
+      feedback_false: 'FALSE',
+      blitz_done: 'Blitz done!',
+      blitz_correct_word: 'correct',
+      hint_label: '💡',
+      insight_label: '🔑 Key insight:',
+      // Victory stats
+      points_earned: 'Points Earned',
+      win_streak: 'Win Streak',
+      multiplier: 'Multiplier',
+      perfect_kill: 'Perfect Kill!',
+      new_badge: 'NEW',
+      // Error / alert messages
+      err_no_files_usable: 'None of your uploaded files could be used:',
+      err_upload_jpg: 'Please upload a JPG, PNG, GIF, or WebP image.',
+      err_not_image: 'not an image',
+      err_not_supported: 'not supported — use JPG/PNG',
+      err_could_not_resize: 'could not resize',
+      err_generic: 'Failed to generate battle. Please try again.',
+      // Titles (gamification)
+      title_rookie: 'Homework Rookie',
+      title_quester: 'Question Quester',
+      title_puncher: 'Problem Puncher',
+      title_battler: 'Boss Battler',
+      title_slayer: 'Boss Slayer',
+      title_knight: 'Knowledge Knight',
+      title_warrior: 'Wisdom Warrior',
+      title_brain_lord: 'Brain Lord',
+      title_legendary: 'Legendary Mind',
+      // Badges
+      badge_first_blood: 'First Blood',
+      badge_veteran: 'Veteran',
+      badge_perfect: 'Perfect Kill',
+      badge_on_fire: 'On Fire',
+      badge_unstoppable: 'Unstoppable',
+      badge_point_hoarder: 'Point Hoarder',
+      badge_rich_mind: 'Rich Mind',
     },
     ar: {
       new_challenge_badge: '\u062A\u062D\u062F\u0651\u064A \u062C\u062F\u064A\u062F',
@@ -109,6 +159,56 @@ const I18n = (() => {
       subj_geography: '\u062C\u063A\u0631\u0627\u0641\u064A\u0627',
       subj_cs: '\u062D\u0627\u0633\u0628',
       subj_other: '\u0623\u062E\u0631\u0649',
+      // Round labels + dynamic UI
+      round_label: '\u0627\u0644\u062C\u0648\u0644\u0629',
+      round1_title: '\u26A1 \u0627\u0644\u0636\u0631\u0628\u0629 \u0627\u0644\u0633\u0631\u064A\u0639\u0629',
+      round2_title: '\u26A1 \u0635\u062D \u0623\u0645 \u062E\u0637\u0623',
+      round3_title: '💥 \u0627\u0644\u0636\u0631\u0628\u0629 \u0627\u0644\u0646\u0647\u0627\u0626\u064A\u0629',
+      btn_true: '\u2705 \u0635\u062D',
+      btn_false: '\u274C \u062E\u0637\u0623',
+      btn_next_round: '\u0627\u0644\u062C\u0648\u0644\u0629 \u0627\u0644\u062A\u0627\u0644\u064A\u0629 \u2190',
+      btn_final_round: '\u0627\u0644\u062C\u0648\u0644\u0629 \u0627\u0644\u0646\u0647\u0627\u0626\u064A\u0629 \u2190',
+      btn_strike: '\u2694\uFE0F \u0627\u0636\u0631\u0628!',
+      answer_placeholder: '\u0625\u062C\u0627\u0628\u062A\u0643...',
+      feedback_correct: '\u0625\u062C\u0627\u0628\u0629 \u0635\u062D\u064A\u062D\u0629! 🎯',
+      feedback_wrong: '\u0625\u062C\u0627\u0628\u0629 \u062E\u0627\u0637\u0626\u0629! \u0627\u0644\u0625\u062C\u0627\u0628\u0629 \u0647\u064A',
+      feedback_true: '\u0635\u062D',
+      feedback_false: '\u062E\u0637\u0623',
+      blitz_done: '\u0627\u0646\u062A\u0647\u062A \u0627\u0644\u062C\u0648\u0644\u0629!',
+      blitz_correct_word: '\u0625\u062C\u0627\u0628\u0627\u062A \u0635\u062D\u064A\u062D\u0629',
+      hint_label: '💡',
+      insight_label: '🔑 \u0627\u0644\u0641\u0643\u0631\u0629 \u0627\u0644\u0631\u0626\u064A\u0633\u064A\u0629:',
+      // Victory stats
+      points_earned: '\u0627\u0644\u0646\u0642\u0627\u0637 \u0627\u0644\u0645\u0643\u062A\u0633\u0628\u0629',
+      win_streak: '\u0633\u0644\u0633\u0644\u0629 \u0627\u0644\u0641\u0648\u0632',
+      multiplier: '\u0645\u0636\u0627\u0639\u0641 \u0627\u0644\u0646\u0642\u0627\u0637',
+      perfect_kill: '\u0641\u0648\u0632 \u0645\u062B\u0627\u0644\u064A!',
+      new_badge: '\u062C\u062F\u064A\u062F',
+      // Error / alert messages
+      err_no_files_usable: '\u0644\u0627 \u064A\u0645\u0643\u0646 \u0627\u0633\u062A\u062E\u062F\u0627\u0645 \u0623\u064A \u0645\u0646 \u0627\u0644\u0645\u0644\u0641\u0627\u062A \u0627\u0644\u062A\u064A \u0631\u0641\u0639\u062A\u0647\u0627:',
+      err_upload_jpg: '\u0641\u0636\u0644\u0627\u064B \u0627\u0631\u0641\u0639 \u0635\u0648\u0631\u0629 \u0628\u0635\u064A\u063A\u0629 JPG \u0623\u0648 PNG \u0623\u0648 GIF \u0623\u0648 WebP.',
+      err_not_image: '\u0644\u064A\u0633 \u0635\u0648\u0631\u0629',
+      err_not_supported: '\u063A\u064A\u0631 \u0645\u062F\u0639\u0648\u0645 \u2014 \u0627\u0633\u062A\u062E\u062F\u0645 JPG \u0623\u0648 PNG',
+      err_could_not_resize: '\u062A\u0639\u0630\u0631 \u062A\u063A\u064A\u064A\u0631 \u0627\u0644\u062D\u062C\u0645',
+      err_generic: '\u062A\u0639\u0630\u0631 \u062A\u0648\u0644\u064A\u062F \u0627\u0644\u062A\u062D\u062F\u064A. \u062D\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062E\u0631\u0649.',
+      // Titles
+      title_rookie: '\u0645\u0628\u062A\u062F\u0626 \u0627\u0644\u0648\u0627\u062C\u0628\u0627\u062A',
+      title_quester: '\u0628\u0627\u062D\u062B \u0627\u0644\u0623\u0633\u0626\u0644\u0629',
+      title_puncher: '\u0645\u0644\u0627\u0643\u0645 \u0627\u0644\u0645\u0633\u0627\u0626\u0644',
+      title_battler: '\u0645\u062D\u0627\u0631\u0628 \u0627\u0644\u0632\u0639\u0645\u0627\u0621',
+      title_slayer: '\u0642\u0627\u062A\u0644 \u0627\u0644\u0632\u0639\u0645\u0627\u0621',
+      title_knight: '\u0641\u0627\u0631\u0633 \u0627\u0644\u0645\u0639\u0631\u0641\u0629',
+      title_warrior: '\u0645\u062D\u0627\u0631\u0628 \u0627\u0644\u062D\u0643\u0645\u0629',
+      title_brain_lord: '\u0633\u064A\u062F \u0627\u0644\u0639\u0642\u0644',
+      title_legendary: '\u0627\u0644\u0639\u0642\u0644 \u0627\u0644\u0623\u0633\u0637\u0648\u0631\u064A',
+      // Badges
+      badge_first_blood: '\u0623\u0648\u0644 \u0641\u0648\u0632',
+      badge_veteran: '\u0645\u062E\u0636\u0631\u0645',
+      badge_perfect: '\u0641\u0648\u0632 \u0645\u062B\u0627\u0644\u064A',
+      badge_on_fire: '\u0645\u0634\u062A\u0639\u0644',
+      badge_unstoppable: '\u0644\u0627 \u064A\u064F\u0642\u0627\u0648\u0645',
+      badge_point_hoarder: '\u062C\u0627\u0645\u0639 \u0627\u0644\u0646\u0642\u0627\u0637',
+      badge_rich_mind: '\u0627\u0644\u0639\u0642\u0644 \u0627\u0644\u063A\u0646\u064A',
     }
   };
 
@@ -145,6 +245,11 @@ const I18n = (() => {
     document.querySelectorAll('.lang-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.lang === lang);
     });
+
+    // Refresh the gamification UI so the player title updates live
+    if (typeof Gamification !== 'undefined' && Gamification.updateUI) {
+      Gamification.updateUI();
+    }
   }
 
   function init() {

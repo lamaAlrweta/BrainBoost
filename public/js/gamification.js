@@ -5,26 +5,34 @@
 const Gamification = (() => {
   const STORAGE_KEY = 'brainboost_data';
 
+  // Translation lookup helper
+  function tr(key) {
+    if (typeof I18n === 'undefined' || !I18n.translations) return key;
+    const lang = I18n.getCurrentLang ? I18n.getCurrentLang() : 'en';
+    const dict = I18n.translations[lang] || I18n.translations.en || {};
+    return dict[key] || (I18n.translations.en && I18n.translations.en[key]) || key;
+  }
+
   const TITLES = [
-    { minPoints: 0, title: 'Homework Rookie', emoji: '🐣' },
-    { minPoints: 100, title: 'Question Quester', emoji: '🗡️' },
-    { minPoints: 300, title: 'Problem Puncher', emoji: '👊' },
-    { minPoints: 600, title: 'Boss Battler', emoji: '⚔️' },
-    { minPoints: 1000, title: 'Boss Slayer', emoji: '🔥' },
-    { minPoints: 2000, title: 'Knowledge Knight', emoji: '🛡️' },
-    { minPoints: 3500, title: 'Wisdom Warrior', emoji: '⚡' },
-    { minPoints: 5000, title: 'Brain Lord', emoji: '🧠' },
-    { minPoints: 10000, title: 'Legendary Mind', emoji: '👑' },
+    { minPoints: 0, key: 'title_rookie', emoji: '🐣' },
+    { minPoints: 100, key: 'title_quester', emoji: '🗡️' },
+    { minPoints: 300, key: 'title_puncher', emoji: '👊' },
+    { minPoints: 600, key: 'title_battler', emoji: '⚔️' },
+    { minPoints: 1000, key: 'title_slayer', emoji: '🔥' },
+    { minPoints: 2000, key: 'title_knight', emoji: '🛡️' },
+    { minPoints: 3500, key: 'title_warrior', emoji: '⚡' },
+    { minPoints: 5000, key: 'title_brain_lord', emoji: '🧠' },
+    { minPoints: 10000, key: 'title_legendary', emoji: '👑' },
   ];
 
   const BADGES = [
-    { id: 'first_win', name: 'First Blood', emoji: '🩸', desc: 'Defeat your first boss', check: d => d.totalWins >= 1 },
-    { id: 'ten_wins', name: 'Veteran', emoji: '🎖️', desc: 'Defeat 10 bosses', check: d => d.totalWins >= 10 },
-    { id: 'perfect', name: 'Perfect Kill', emoji: '💎', desc: 'Complete a battle with no mistakes', check: d => d.perfectKills >= 1 },
-    { id: 'streak3', name: 'On Fire', emoji: '🔥', desc: 'Win 3 battles in a row', check: d => d.bestStreak >= 3 },
-    { id: 'streak5', name: 'Unstoppable', emoji: '💥', desc: 'Win 5 battles in a row', check: d => d.bestStreak >= 5 },
-    { id: 'points1k', name: 'Point Hoarder', emoji: '💰', desc: 'Earn 1,000 total points', check: d => d.totalPoints >= 1000 },
-    { id: 'points5k', name: 'Rich Mind', emoji: '👑', desc: 'Earn 5,000 total points', check: d => d.totalPoints >= 5000 },
+    { id: 'first_win', key: 'badge_first_blood', emoji: '🩸', check: d => d.totalWins >= 1 },
+    { id: 'ten_wins', key: 'badge_veteran', emoji: '🎖️', check: d => d.totalWins >= 10 },
+    { id: 'perfect', key: 'badge_perfect', emoji: '💎', check: d => d.perfectKills >= 1 },
+    { id: 'streak3', key: 'badge_on_fire', emoji: '🔥', check: d => d.bestStreak >= 3 },
+    { id: 'streak5', key: 'badge_unstoppable', emoji: '💥', check: d => d.bestStreak >= 5 },
+    { id: 'points1k', key: 'badge_point_hoarder', emoji: '💰', check: d => d.totalPoints >= 1000 },
+    { id: 'points5k', key: 'badge_rich_mind', emoji: '👑', check: d => d.totalPoints >= 5000 },
   ];
 
   // Load data from localStorage
@@ -53,13 +61,13 @@ const Gamification = (() => {
     return load();
   }
 
-  // Get current title based on points
+  // Get current title based on points (translated)
   function getTitle(points) {
     let current = TITLES[0];
     for (const t of TITLES) {
       if (points >= t.minPoints) current = t;
     }
-    return current;
+    return { ...current, title: tr(current.key) };
   }
 
   // Get streak multiplier
@@ -96,12 +104,12 @@ const Gamification = (() => {
     const totalEarned = (battlePoints + perfectBonus) * multiplier;
     data.totalPoints += totalEarned;
 
-    // Check for new badges
+    // Check for new badges (translate names on the fly)
     const newBadges = [];
     for (const badge of BADGES) {
       if (!data.badges.includes(badge.id) && badge.check(data)) {
         data.badges.push(badge.id);
-        newBadges.push(badge);
+        newBadges.push({ ...badge, name: tr(badge.key) });
       }
     }
 
