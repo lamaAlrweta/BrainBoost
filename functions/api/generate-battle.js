@@ -1,13 +1,4 @@
-require('dotenv').config({ path: require('path').join(__dirname, '.env'), override: true });
-const express = require('express');
-const Anthropic = require('@anthropic-ai/sdk');
-const path = require('path');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(express.json({ limit: '25mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+import Anthropic from '@anthropic-ai/sdk';
 
 // Claude Vision only accepts these image types
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -111,55 +102,7 @@ function buildUserMessage(question, subject, images, lang) {
   return content;
 }
 
-// Check if API key is configured
-const hasApiKey = process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'your_api_key_here';
-
-let anthropic;
-if (hasApiKey) {
-  anthropic = new Anthropic.default({ apiKey: process.env.ANTHROPIC_API_KEY });
-}
-
-// API status endpoint
-app.get('/api/status', (req, res) => {
-  res.json({ hasApiKey, mode: hasApiKey ? 'live' : 'demo' });
-});
-
-// Generate boss battle rounds for a homework question
-app.post('/api/generate-battle', async (req, res) => {
-  const { question, subject, images, lang } = req.body;
-  const language = lang === 'ar' ? 'ar' : 'en';
-
-  // Filter images to only supported types
-  const validImages = (images || []).filter(img => ALLOWED_IMAGE_TYPES.includes(img.type));
-  const rejectedImages = (images || []).filter(img => !ALLOWED_IMAGE_TYPES.includes(img.type));
-
-  if (!question && validImages.length === 0) {
-    if (rejectedImages.length > 0) {
-      return res.status(400).json({ error: errMsg('unsupported_image', language) });
-    }
-    return res.status(400).json({ error: errMsg('no_input', language) });
-  }
-
-  // Check image size (Claude limit is ~5 MB per image, base64 is ~1.33x larger)
-  for (const img of validImages) {
-    const approxBytes = (img.data || '').length * 0.75;
-    if (approxBytes > 5 * 1024 * 1024) {
-      return res.status(400).json({ error: errMsg('image_too_large', language) });
-    }
-  }
-
-  // Demo mode - return sample battle data
-  if (!hasApiKey) {
-    return res.json(getDemoBattle(question, subject));
-  }
-
-  const maxRetries = 3;
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      const message = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        system: `You are BrainBoost, a homework tutor that teaches through game-like challenges.
+const SYSTEM_PROMPT = `You are BrainBoost, a homework tutor that teaches through game-like challenges.
 You MUST respond with valid JSON only - no markdown, no code fences, no extra text.
 
 Given a homework question, generate a "Boss Battle" with 3 rounds that teach the student the concepts needed to solve it.
@@ -198,7 +141,99 @@ Respond in this exact JSON format:
     "hint": "A one-line hint if they get it wrong"
   },
   "fullSolution": "ANSWER: [the clear, direct answer to the homework question]\\n\\n[Then a short 2-3 sentence explanation of WHY this is the answer]"
-}`,
+}`;
+
+// Demo battle data for when no API key is set
+function getDemoBattle(question) {
+  return {
+    demo: true,
+    bossName: 'The Demo Dragon',
+    bossEmoji: '🐉',
+    round1: {
+      type: 'quick_draw',
+      question: 'This is a demo! Which of these is the correct approach to start solving this problem?',
+      options: [
+        'Break it down into smaller parts',
+        'Guess randomly',
+        'Skip it entirely',
+        'Copy from the internet'
+      ],
+      correctIndex: 0,
+      hint: "Think about how you'd eat an elephant - one bite at a time!"
+    },
+    round2: {
+      type: 'true_false_blitz',
+      statements: [
+        { text: 'Breaking a problem into smaller parts makes it easier to solve', isTrue: true },
+        { text: 'You should always start solving without reading the full question', isTrue: false },
+        { text: 'Understanding key concepts helps you solve problems faster', isTrue: true }
+      ]
+    },
+    round3: {
+      type: 'final_strike_mc',
+      question: 'What is the FIRST step to solving any homework problem?',
+      options: [
+        'Read and understand the question',
+        'Guess the answer immediately',
+        'Skip it and move on',
+        'Copy from a friend'
+      ],
+      correctIndex: 0,
+      hint: "Always start by understanding what's being asked!"
+    },
+    fullSolution:
+      '🎮 This is DEMO MODE! To get real AI-powered battles, set the ANTHROPIC_API_KEY secret.\n\nGet your key at: https://console.anthropic.com/\n\nYour original question was: "' +
+      (question || '(image only)') +
+      '"'
+  };
+}
+
+export const onRequestPost = async ({ request, env }) => {
+  const hasApiKey = !!env.ANTHROPIC_API_KEY && env.ANTHROPIC_API_KEY !== 'your_api_key_here';
+
+  let body;
+  try {
+    body = await request.json();
+  } catch (_) {
+    return Response.json({ error: errMsg('generic', 'en') }, { status: 400 });
+  }
+
+  const { question, subject, images, lang } = body || {};
+  const language = lang === 'ar' ? 'ar' : 'en';
+
+  // Filter images to only supported types
+  const validImages = (images || []).filter(img => ALLOWED_IMAGE_TYPES.includes(img.type));
+  const rejectedImages = (images || []).filter(img => !ALLOWED_IMAGE_TYPES.includes(img.type));
+
+  if (!question && validImages.length === 0) {
+    if (rejectedImages.length > 0) {
+      return Response.json({ error: errMsg('unsupported_image', language) }, { status: 400 });
+    }
+    return Response.json({ error: errMsg('no_input', language) }, { status: 400 });
+  }
+
+  // Check image size (Claude limit is ~5 MB per image, base64 is ~1.33x larger)
+  for (const img of validImages) {
+    const approxBytes = (img.data || '').length * 0.75;
+    if (approxBytes > 5 * 1024 * 1024) {
+      return Response.json({ error: errMsg('image_too_large', language) }, { status: 400 });
+    }
+  }
+
+  // Demo mode - return sample battle data
+  if (!hasApiKey) {
+    return Response.json(getDemoBattle(question));
+  }
+
+  const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const message = await anthropic.messages.create({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 2000,
+        system: SYSTEM_PROMPT,
         messages: [
           {
             role: 'user',
@@ -209,7 +244,7 @@ Respond in this exact JSON format:
 
       const text = message.content.find(c => c.type === 'text')?.text || message.content[0]?.text || '';
       const battle = extractJSON(text);
-      return res.json(battle);
+      return Response.json(battle);
     } catch (error) {
       const status = error.status || error.statusCode || 0;
       console.error(`API Error (attempt ${attempt}/${maxRetries}):`, status, error.message);
@@ -217,72 +252,20 @@ Respond in this exact JSON format:
       // Retry on overloaded (529) or rate limit (429) or server errors (500+)
       if ((status === 529 || status === 429 || status >= 500) && attempt < maxRetries) {
         const waitTime = attempt * 2000; // 2s, 4s
-        console.log(`Retrying in ${waitTime / 1000}s...`);
         await new Promise(r => setTimeout(r, waitTime));
         continue;
       }
 
       if (status === 529) {
-        return res.status(503).json({ error: errMsg('ai_busy', language) });
+        return Response.json({ error: errMsg('ai_busy', language) }, { status: 503 });
       }
       if (status === 400) {
-        return res.status(400).json({ error: errMsg('generic', language) });
+        return Response.json({ error: errMsg('generic', language) }, { status: 400 });
       }
       if (status === 401 || status === 403) {
-        return res.status(500).json({ error: errMsg('api_key', language) });
+        return Response.json({ error: errMsg('api_key', language) }, { status: 500 });
       }
-      return res.status(500).json({ error: errMsg('generic', language) });
+      return Response.json({ error: errMsg('generic', language) }, { status: 500 });
     }
   }
-});
-
-// Demo battle data for when no API key is set
-function getDemoBattle(question, subject) {
-  return {
-    demo: true,
-    bossName: "The Demo Dragon",
-    bossEmoji: "🐉",
-    round1: {
-      type: "quick_draw",
-      question: "This is a demo! Which of these is the correct approach to start solving this problem?",
-      options: [
-        "Break it down into smaller parts",
-        "Guess randomly",
-        "Skip it entirely",
-        "Copy from the internet"
-      ],
-      correctIndex: 0,
-      hint: "Think about how you'd eat an elephant - one bite at a time!"
-    },
-    round2: {
-      type: "true_false_blitz",
-      statements: [
-        { text: "Breaking a problem into smaller parts makes it easier to solve", isTrue: true },
-        { text: "You should always start solving without reading the full question", isTrue: false },
-        { text: "Understanding key concepts helps you solve problems faster", isTrue: true }
-      ]
-    },
-    round3: {
-      type: "final_strike_mc",
-      question: "What is the FIRST step to solving any homework problem?",
-      options: [
-        "Read and understand the question",
-        "Guess the answer immediately",
-        "Skip it and move on",
-        "Copy from a friend"
-      ],
-      correctIndex: 0,
-      hint: "Always start by understanding what's being asked!"
-    },
-    fullSolution: "🎮 This is DEMO MODE! To get real AI-powered battles, add your Anthropic API key to the .env file.\n\nGet your key at: https://console.anthropic.com/\n\nYour original question was: \"" + (question || '(image only)') + "\""
-  };
-}
-
-app.listen(PORT, () => {
-  console.log(`\n🧠 BrainBoost is running at http://localhost:${PORT}`);
-  console.log(`💡 Mode: ${hasApiKey ? '🟢 LIVE (Claude API)' : '🟡 DEMO (no API key)'}`);
-  if (!hasApiKey) {
-    console.log(`\n💡 To enable AI: add your API key to .env`);
-    console.log(`   Get one at: https://console.anthropic.com/\n`);
-  }
-});
+};
