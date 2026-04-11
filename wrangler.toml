@@ -2,3 +2,10 @@ name = "brainboost"
 compatibility_date = "2026-04-11"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "public"
+
+# Cloudflare Turnstile site key (public — safe to commit).
+# This is the Cloudflare-documented "always passes" test key. Replace it with
+# a real sitekey from dash.cloudflare.com/?to=/:account/turnstile once you
+# create a widget. The matching TURNSTILE_SECRET_KEY is a Pages secret.
+[vars]
+TURNSTILE_SITE_KEY = "1x00000000000000000000AA"

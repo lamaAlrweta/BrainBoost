@@ -10,6 +10,11 @@ const App = (() => {
   let uploadedFiles = [];
   let selectedSubject = 'Math';
 
+  // Cloudflare Turnstile state
+  let turnstileSiteKey = null;   // sitekey fetched from /api/status
+  let turnstileWidgetId = null;  // id returned by turnstile.render()
+  let turnstileToken = null;     // latest token issued by the widget
+
   // Claude Vision only accepts these image types
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
   const MAX_IMAGE_BYTES = 4.5 * 1024 * 1024; // stay under Claude's 5 MB limit
@@ -215,8 +220,60 @@ const App = (() => {
       if (data.mode === 'demo') {
         els.modeBanner.style.display = 'block';
       }
+      if (data.turnstileSiteKey) {
+        turnstileSiteKey = data.turnstileSiteKey;
+        tryRenderTurnstile();
+      }
     } catch {
       els.modeBanner.style.display = 'block';
+    }
+  }
+
+  // ========================================
+  // Cloudflare Turnstile
+  // ========================================
+
+  // Render the widget when both the Turnstile library and the sitekey are
+  // available. Polls for window.turnstile because the script is loaded async
+  // and may finish before or after this function is first called. Fails open
+  // with a console warning if the script never appears (e.g. blocked by an
+  // ad blocker) — the server will still reject the request, but the user
+  // sees a clearer error than a silently broken page.
+  function tryRenderTurnstile(attempt = 0) {
+    if (!turnstileSiteKey) return;
+    if (turnstileWidgetId !== null) return; // already rendered
+    const container = document.getElementById('turnstile-container');
+    if (!container) return;
+
+    if (!window.turnstile || typeof window.turnstile.render !== 'function') {
+      if (attempt > 60) { // ~6 seconds
+        console.warn('Turnstile script never loaded — widget will not render. ' +
+                     'Likely blocked by an extension or network filter.');
+        return;
+      }
+      setTimeout(() => tryRenderTurnstile(attempt + 1), 100);
+      return;
+    }
+
+    try {
+      turnstileWidgetId = window.turnstile.render(container, {
+        sitekey: turnstileSiteKey,
+        callback: (token) => { turnstileToken = token; },
+        'expired-callback': () => { turnstileToken = null; },
+        'error-callback': () => { turnstileToken = null; },
+        theme: 'light',
+        appearance: 'always'
+      });
+    } catch (e) {
+      console.error('Turnstile render failed:', e);
+    }
+  }
+
+  // Force a new token for the next battle (tokens are single-use)
+  function resetTurnstile() {
+    turnstileToken = null;
+    if (turnstileWidgetId !== null && window.turnstile) {
+      try { window.turnstile.reset(turnstileWidgetId); } catch (_) {}
     }
   }
 
@@ -293,7 +350,7 @@ const App = (() => {
       const res = await fetch('/api/generate-battle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, subject, images, lang }),
+        body: JSON.stringify({ question, subject, images, lang, turnstileToken }),
       });
 
       const payload = await res.json().catch(() => ({}));
@@ -658,6 +715,7 @@ const App = (() => {
     uploadedFiles = [];
     if (els.fileList) els.fileList.innerHTML = '';
     round3Attempts = 0;
+    resetTurnstile(); // issue a fresh token for the next battle
     showScreen('input');
   }
 

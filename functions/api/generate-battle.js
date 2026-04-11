@@ -25,6 +25,14 @@ const ERRORS = {
     en: 'Server API key is invalid or missing.',
     ar: 'مفتاح API الخاص بالخادم غير صالح أو مفقود.'
   },
+  turnstile_missing: {
+    en: "We couldn't verify you're human. Please refresh the page and try again.",
+    ar: 'تعذر التحقق من أنك لست روبوتاً. يرجى إعادة تحميل الصفحة والمحاولة مرة أخرى.'
+  },
+  turnstile_failed: {
+    en: "Human verification failed. Please refresh the page and try again.",
+    ar: 'فشل التحقق من أنك لست روبوتاً. يرجى إعادة تحميل الصفحة والمحاولة مرة أخرى.'
+  },
   generic: {
     en: 'Failed to generate battle. Please try again.',
     ar: 'تعذر توليد التحدي. حاول مرة أخرى.'
@@ -198,8 +206,35 @@ export const onRequestPost = async ({ request, env }) => {
     return Response.json({ error: errMsg('generic', 'en') }, { status: 400 });
   }
 
-  const { question, subject, images, lang } = body || {};
+  const { question, subject, images, lang, turnstileToken } = body || {};
   const language = lang === 'ar' ? 'ar' : 'en';
+
+  // Cloudflare Turnstile verification (only enforced if the secret is configured,
+  // so local dev without Turnstile keys still works)
+  if (env.TURNSTILE_SECRET_KEY) {
+    if (!turnstileToken) {
+      return Response.json({ error: errMsg('turnstile_missing', language) }, { status: 400 });
+    }
+    try {
+      const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          secret: env.TURNSTILE_SECRET_KEY,
+          response: turnstileToken,
+          remoteip: request.headers.get('CF-Connecting-IP') || ''
+        })
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyData.success) {
+        console.warn('Turnstile verification failed:', verifyData['error-codes']);
+        return Response.json({ error: errMsg('turnstile_failed', language) }, { status: 403 });
+      }
+    } catch (e) {
+      console.error('Turnstile siteverify network error:', e.message);
+      return Response.json({ error: errMsg('turnstile_failed', language) }, { status: 503 });
+    }
+  }
 
   // Filter images to only supported types
   const validImages = (images || []).filter(img => ALLOWED_IMAGE_TYPES.includes(img.type));

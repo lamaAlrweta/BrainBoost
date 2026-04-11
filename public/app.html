@@ -104,6 +104,9 @@
         </div>
       </div>
 
+      <!-- Cloudflare Turnstile (rendered dynamically by app.js if a sitekey is configured) -->
+      <div id="turnstile-container" class="turnstile-container"></div>
+
       <button class="battle-button" id="start-battle-btn">
         <span class="battle-button-text" data-i18n="start_battle">Start Boss Battle</span>
         <span class="battle-button-icon">⚔</span>
@@ -168,5 +171,7 @@
   <script src="js/i18n.js"></script>
   <script src="js/gamification.js"></script>
   <script src="js/app.js"></script>
+  <!-- Cloudflare Turnstile script (loaded after app.js so the render helper is already defined) -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 </body>
 </html>
