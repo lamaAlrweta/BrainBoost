@@ -1,5 +1,5 @@
 // ========================================
-// BrainBoost - Gamification System
+// حلها (Hallha) - Gamification System
 // ========================================
 
 const Gamification = (() => {

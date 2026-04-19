@@ -1,5 +1,5 @@
 // ========================================
-// BrainBoost - Main App Logic
+// حلها (Hallha) - Main App Logic
 // ========================================
 
 const App = (() => {
@@ -418,13 +418,14 @@ const App = (() => {
   }
 
   // ========================================
-  // Round 1: Quick Draw (Multiple Choice)
+  // Round 1: حلها / Solve It (Multiple Choice)
   // ========================================
   function renderRound1() {
     const r = battleData.round1;
     els.roundContent.innerHTML = `
       <div class="round-label">${t('round_label')} 1</div>
       <div class="round-title">${t('round1_title')}</div>
+      <div class="round-subtitle">${t('round1_subtitle')}</div>
       <div class="round-question">${escapeHtml(r.question)}</div>
       <div class="options-grid" id="options-grid">
         ${r.options.map((opt, i) => `
@@ -475,7 +476,7 @@ const App = (() => {
   }
 
   // ========================================
-  // Round 2: True or False Blitz
+  // Round 2: افهمها / Understand It (True or False)
   // ========================================
   let blitzIndex = 0;
   let blitzCorrect = 0;
@@ -488,6 +489,7 @@ const App = (() => {
     els.roundContent.innerHTML = `
       <div class="round-label">${t('round_label')} 2</div>
       <div class="round-title">${t('round2_title')}</div>
+      <div class="round-subtitle">${t('round2_subtitle')}</div>
       <div class="blitz-container">
         <div class="blitz-progress" id="blitz-progress">
           ${r.statements.map((_, i) => `<div class="blitz-pip ${i === 0 ? 'active' : ''}" id="pip-${i}"></div>`).join('')}
@@ -569,7 +571,7 @@ const App = (() => {
   }
 
   // ========================================
-  // Round 3: Final Strike (Easy Multiple Choice)
+  // Round 3: اتقنها / Master It (Easy Multiple Choice)
   // ========================================
   function renderRound3() {
     const r = battleData.round3;
@@ -579,6 +581,7 @@ const App = (() => {
       els.roundContent.innerHTML = `
         <div class="round-label">${t('round_label')} 3</div>
         <div class="round-title">${t('round3_title')}</div>
+        <div class="round-subtitle">${t('round3_subtitle')}</div>
         <div class="round-question">${escapeHtml(r.question)}</div>
         <div class="options-grid" id="strike-options">
           ${r.options.map((opt, i) => `
@@ -596,6 +599,7 @@ const App = (() => {
       els.roundContent.innerHTML = `
         <div class="round-label">${t('round_label')} 3</div>
         <div class="round-title">${t('round3_title')}</div>
+        <div class="round-subtitle">${t('round3_subtitle')}</div>
         <div class="round-question">${escapeHtml(r.challenge || r.question)}</div>
         <div class="strike-input-group">
           <input type="text" class="strike-input" id="strike-input" placeholder="${t('answer_placeholder')}" autocomplete="off">

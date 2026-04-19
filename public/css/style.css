@@ -1,5 +1,5 @@
 /* ========================================
-   BrainBoost - Light Theme
+   حلها (Hallha) - Light Theme
    ======================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -291,6 +291,22 @@ body {
 
 .hero-subtitle strong {
   color: var(--accent);
+}
+
+/* Main slogan — sits between app name and hero subtitle, most prominent supporting line */
+.hero-tagline {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 0.2px;
+  margin: 4px 0 18px;
+  line-height: 1.4;
+}
+
+[dir="rtl"] .hero-tagline {
+  font-family: 'Droid Arabic Kufi', 'IBM Plex Sans Arabic', sans-serif;
+  font-size: 28px;
+  line-height: 1.8;
 }
 
 .hero-desc {
@@ -1208,9 +1224,26 @@ body {
 }
 
 .round-title {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 800;
+  margin-bottom: 4px;
+}
+
+/* Round subtitle — character role e.g. "The Curious One" / "الفضولي" */
+.round-subtitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
   margin-bottom: 16px;
+  opacity: 0.85;
+}
+
+[dir="rtl"] .round-subtitle {
+  font-family: 'Droid Arabic Kufi', 'IBM Plex Sans Arabic', sans-serif;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .round-question {
@@ -1220,7 +1253,7 @@ body {
   color: var(--text);
 }
 
-/* Quick Draw - Multiple Choice */
+/* Round 1 "حلها" (Solve It) - Multiple Choice */
 .options-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1274,7 +1307,7 @@ body {
   75% { transform: translateX(6px); }
 }
 
-/* True/False Blitz */
+/* Round 2 "افهمها" (Understand It) - True/False */
 .blitz-container {
   display: flex;
   flex-direction: column;
@@ -1392,7 +1425,7 @@ body {
   background: rgba(255, 107, 107, 0.1);
 }
 
-/* Final Strike */
+/* Round 3 "اتقنها" (Master It) */
 .strike-input-group {
   display: flex;
   gap: 12px;

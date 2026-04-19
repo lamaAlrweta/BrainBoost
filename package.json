@@ -1,7 +1,7 @@
 {
-  "name": "brainboost",
+  "name": "hallha",
   "version": "2.0.0",
-  "description": "Homework helper that makes you think before you get answers",
+  "description": "حلها — منصة تعليمية تساعد الطلاب على حل الواجبات وفهمها. حلها مرة، افهمها للأبد.",
   "private": true,
   "scripts": {
     "dev": "wrangler pages dev",
