@@ -96,7 +96,7 @@ function buildUserMessage(question, subject, images, lang) {
   // Add the text question
   const isArabic = lang === 'ar';
   const langInstruction = isArabic
-    ? 'IMPORTANT: The user interface language is Arabic. You MUST write ALL text fields in the JSON response (bossName, round questions, options, statements, hints, fullSolution) in Arabic, even if the homework question itself is written in English. Translate concepts into natural Arabic. Only keep proper nouns, formulas, numbers, chemical symbols and code in their original form.'
+    ? 'IMPORTANT: The user interface language is Arabic. You MUST write ALL text fields in the JSON response (topic title, round questions, options, statements, hints, fullSolution) in Arabic, even if the homework question itself is written in English. Translate concepts into natural Arabic. Only keep proper nouns, formulas, numbers, chemical symbols and code in their original form.'
     : 'IMPORTANT: The user interface language is English. Write ALL text fields in the JSON response in English.';
 
   const textParts = [langInstruction, `Subject: ${subject || 'General'}`];
@@ -126,13 +126,15 @@ IMPORTANT RULES:
 - The fullSolution MUST start with the CLEAR DIRECT ANSWER to the homework question (e.g., "Answer: c. alleles"), THEN give a short explanation after.
 - If an image is attached, read the homework question directly from the image and solve it.
 - AT LEAST ONE of the three rounds MUST frame its question around a concrete, everyday real-life scenario (cooking, sports, shopping, travel, phone/battery, pizza slices, etc.) so the student sees how the concept applies outside the textbook. Pick the round where a real-life example fits most naturally.
-- The language of ALL text fields in the JSON (bossName, questions, options, statements, hints, fullSolution) MUST match the user interface language specified in the user message, regardless of the language of the homework question itself.
-- Focus on UNDERSTANDING, not combat. Frame hints and explanations to build insight, not to "defeat" anything.
+- The language of ALL text fields in the JSON (topic title, questions, options, statements, hints, fullSolution) MUST match the user interface language specified in the user message, regardless of the language of the homework question itself.
+- Focus on UNDERSTANDING, not combat. Frame hints and explanations to build insight, not to "defeat" anything. Do NOT name any concept as a "villain", "monster", "boss" or enemy — we teach, we don't fight.
+- The "bossName" field is actually the TOPIC TITLE for this session (a clean, descriptive label of WHAT the student is learning). It must read like an educational heading, not a villain. Examples of GOOD topic titles: "الكسور العشرية", "خواص الأعداد", "قانون نيوتن الثاني", "Photosynthesis Basics", "The Pythagorean Theorem", "Project vs Product Management". BAD (do not use): "سيد الكسور", "The Fraction Phantom", "Sir Syntax Error", or any villain-flavored naming. Keep it 2–6 words.
+- "bossEmoji" is the TOPIC ICON — pick an emoji that represents the subject matter (📐 for geometry, ⚗️ for chemistry, 🧬 for biology, 💼 for management, 📖 for literature, etc.). Do NOT use monster/villain emojis like 👾 👹 🐉 🦹.
 
 Respond in this exact JSON format:
 {
-  "bossName": "A fun, creative boss name related to the topic (e.g., 'The Fraction Phantom', 'Sir Syntax Error')",
-  "bossEmoji": "One emoji that represents the boss",
+  "bossName": "Short educational topic title — what the student is learning (e.g., 'الكسور العشرية', 'Photosynthesis', 'Newton's Second Law'). 2–6 words, descriptive, not a villain name.",
+  "bossEmoji": "A single emoji that represents the subject/topic (e.g., 📐 ⚗️ 🧬 📖 💼 📊 🌍).",
   "round1": {
     "type": "quick_draw",
     "question": "A multiple choice question about a KEY CONCEPT needed to solve the homework",
@@ -162,8 +164,8 @@ Respond in this exact JSON format:
 function getDemoBattle(question) {
   return {
     demo: true,
-    bossName: 'The Demo Dragon',
-    bossEmoji: '🐉',
+    bossName: 'Demo Topic',
+    bossEmoji: '📚',
     round1: {
       type: 'quick_draw',
       question: 'This is a demo! Which of these is the correct approach to start solving this problem?',

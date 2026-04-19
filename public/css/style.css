@@ -529,16 +529,42 @@ body {
 
 .logo-link {
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 12px;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.logo-link:hover {
+  background: rgba(var(--primary-rgb, 227, 90, 108), 0.08);
+  transform: translateY(-1px);
 }
 
 .logo-text {
-  font-size: 20px;
+  font-size: 30px;
   font-weight: 900;
-  color: var(--text);
+  letter-spacing: -0.5px;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
-.logo-text .accent {
-  color: var(--primary);
+/* Arabic logo uses the Kufi display font for a proper brand feel */
+[dir="rtl"] .logo-text {
+  font-family: 'Droid Arabic Kufi', 'IBM Plex Sans Arabic', sans-serif;
+  font-size: 32px;
+  line-height: 1.1;
+  padding-bottom: 3px; /* Kufi descender balance */
+}
+
+.logo-text.accent {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .stats-bar {
@@ -1213,31 +1239,66 @@ body {
   box-shadow: var(--shadow);
 }
 
+/* Round header — centered stack: character → label → title → subtitle → divider
+   This replaces the previous mixed left/right alignment so the eye reads
+   top-to-bottom in one clean column regardless of language direction. */
+
 .round-label {
-  display: inline-block;
+  display: block;
+  text-align: center;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--primary);
-  margin-bottom: 8px;
+  margin: 4px 0 2px;
+  opacity: 0.85;
 }
 
 .round-title {
-  font-size: 24px;
-  font-weight: 800;
-  margin-bottom: 4px;
+  display: block;
+  text-align: center;
+  font-size: 32px;
+  font-weight: 900;
+  margin: 0 0 2px;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+[dir="rtl"] .round-title {
+  font-family: 'Droid Arabic Kufi', 'IBM Plex Sans Arabic', sans-serif;
+  font-size: 34px;
+  letter-spacing: 0;
+  line-height: 1.4;
 }
 
 /* Round subtitle — character role e.g. "The Curious One" / "الفضولي" */
 .round-subtitle {
+  display: block;
+  text-align: center;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  margin-bottom: 16px;
-  opacity: 0.85;
+  margin: 0 auto 18px;
+  opacity: 0.75;
+  padding-bottom: 18px;
+  position: relative;
+}
+
+/* Divider line under the header block to separate header from content */
+.round-subtitle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.35;
 }
 
 [dir="rtl"] .round-subtitle {
@@ -1961,7 +2022,7 @@ input:focus,
   }
 
   .logo-text {
-    font-size: 17px;
+    font-size: 24px;
   }
 
   .strike-input-group {

@@ -371,8 +371,8 @@ const App = (() => {
 
   // Initialize battle UI
   function initBattle() {
-    els.bossEmoji.textContent = battleData.bossEmoji || '👾';
-    els.bossName.textContent = battleData.bossName || 'Unknown Boss';
+    els.bossEmoji.textContent = battleData.bossEmoji || '📚';
+    els.bossName.textContent = battleData.bossName || t('topic_loading');
     setHealth(0);
     updateRoundDots(0);
     startRound(1);
