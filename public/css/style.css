@@ -2054,3 +2054,135 @@ input:focus,
 .turnstile-container:empty {
   display: none;
 }
+
+/* ========================================
+   Hal Character (mascot)
+   Three evolving forms:
+   - hal-curious  → الفضولي  → Round 1 "حلها"
+   - hal-thinker  → المفكِّر → Round 2 "افهمها"
+   - hal-champion → البطل   → Round 3 "اتقنها"
+   ======================================== */
+
+.hal {
+  width: 140px;
+  height: 160px;
+  display: block;
+  will-change: transform;
+  animation: hal-idle 3.4s ease-in-out infinite;
+}
+
+@keyframes hal-idle {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+
+/* Subtle lightbulb pulse on the Thinker form */
+.hal-thinker .hal-lightbulb {
+  transform-origin: 70px 22px;
+  animation: hal-bulb-flicker 2.2s ease-in-out infinite;
+}
+.hal-thinker .hal-bulb-glow {
+  animation: hal-bulb-glow 2.2s ease-in-out infinite;
+  transform-origin: 70px 22px;
+}
+
+@keyframes hal-bulb-flicker {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.85; transform: scale(1.04); }
+}
+@keyframes hal-bulb-glow {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.15); }
+}
+
+/* Champion aura pulse + crown shine */
+.hal-champion .hal-aura {
+  transform-origin: 70px 92px;
+  animation: hal-aura 2.6s ease-in-out infinite;
+}
+.hal-champion .hal-crown {
+  transform-origin: 70px 30px;
+  animation: hal-crown-wobble 4s ease-in-out infinite;
+}
+
+@keyframes hal-aura {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.08); }
+}
+@keyframes hal-crown-wobble {
+  0%, 100% { transform: rotate(0); }
+  25%      { transform: rotate(-1.5deg); }
+  75%      { transform: rotate(1.5deg); }
+}
+
+/* Landing hero mascot */
+.hero-mascot {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.hero-mascot .hal {
+  width: 120px;
+  height: 140px;
+}
+
+/* In-round character header */
+.round-hero {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.round-hero .hal {
+  width: 100px;
+  height: 115px;
+}
+
+/* Victory champion — larger, celebratory */
+.victory-mascot {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.victory-mascot .hal {
+  width: 160px;
+  height: 185px;
+}
+
+/* ========================================
+   Per-round background identity
+   Applied to .round-content which wraps each round's UI.
+   ======================================== */
+
+.round-content {
+  position: relative;
+  border-radius: 20px;
+  padding: 18px 20px 22px;
+  transition: background 0.5s ease;
+  overflow: hidden;
+}
+
+.round-content.round-1 {
+  background: linear-gradient(180deg, #FFF7ED 0%, #FFE4CC 100%);
+}
+.round-content.round-2 {
+  background: linear-gradient(180deg, #F5F3FF 0%, #E0DAFF 100%);
+}
+.round-content.round-3 {
+  background: linear-gradient(180deg, #FFFBEB 0%, #FFE4A8 100%);
+}
+
+/* Round-specific title accent */
+.round-content.round-1 .round-title { color: #C9631C; }
+.round-content.round-2 .round-title { color: #5E4E8F; }
+.round-content.round-3 .round-title { color: #B8860B; }
+
+/* Softer corners for mobile */
+@media (max-width: 640px) {
+  .round-content {
+    padding: 16px 14px 20px;
+    border-radius: 16px;
+  }
+  .hero-mascot .hal { width: 96px; height: 112px; }
+  .round-hero .hal  { width: 80px;  height: 92px;  }
+  .victory-mascot .hal { width: 130px; height: 150px; }
+}

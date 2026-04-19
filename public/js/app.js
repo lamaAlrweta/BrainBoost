@@ -422,7 +422,11 @@ const App = (() => {
   // ========================================
   function renderRound1() {
     const r = battleData.round1;
+    els.roundContent.className = 'round-content round-1';
     els.roundContent.innerHTML = `
+      <div class="round-hero round-1-hero">
+        <svg class="hal hal-curious" aria-hidden="true" viewBox="0 0 140 160"><use href="#hal-curious"/></svg>
+      </div>
       <div class="round-label">${t('round_label')} 1</div>
       <div class="round-title">${t('round1_title')}</div>
       <div class="round-subtitle">${t('round1_subtitle')}</div>
@@ -486,7 +490,11 @@ const App = (() => {
     blitzIndex = 0;
     blitzCorrect = 0;
 
+    els.roundContent.className = 'round-content round-2';
     els.roundContent.innerHTML = `
+      <div class="round-hero round-2-hero">
+        <svg class="hal hal-thinker" aria-hidden="true" viewBox="0 0 140 160"><use href="#hal-thinker"/></svg>
+      </div>
       <div class="round-label">${t('round_label')} 2</div>
       <div class="round-title">${t('round2_title')}</div>
       <div class="round-subtitle">${t('round2_subtitle')}</div>
@@ -577,8 +585,12 @@ const App = (() => {
     const r = battleData.round3;
 
     // Support both old format (essay) and new format (multiple choice)
+    els.roundContent.className = 'round-content round-3';
     if (r.type === 'final_strike_mc' && r.options) {
       els.roundContent.innerHTML = `
+        <div class="round-hero round-3-hero">
+          <svg class="hal hal-champion" aria-hidden="true" viewBox="0 0 140 160"><use href="#hal-champion"/></svg>
+        </div>
         <div class="round-label">${t('round_label')} 3</div>
         <div class="round-title">${t('round3_title')}</div>
         <div class="round-subtitle">${t('round3_subtitle')}</div>
@@ -597,6 +609,9 @@ const App = (() => {
     } else {
       // Fallback for old essay format
       els.roundContent.innerHTML = `
+        <div class="round-hero round-3-hero">
+          <svg class="hal hal-champion" aria-hidden="true" viewBox="0 0 140 160"><use href="#hal-champion"/></svg>
+        </div>
         <div class="round-label">${t('round_label')} 3</div>
         <div class="round-title">${t('round3_title')}</div>
         <div class="round-subtitle">${t('round3_subtitle')}</div>

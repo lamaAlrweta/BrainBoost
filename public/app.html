@@ -153,8 +153,10 @@
   <!-- Victory Screen -->
   <div class="screen hidden" id="victory-screen">
     <div class="victory-card">
-      <div class="victory-emoji">🏆</div>
-      <h1 class="victory-title" data-i18n="boss_defeated">BOSS DEFEATED!</h1>
+      <div class="victory-mascot" aria-hidden="true">
+        <svg class="hal hal-champion hal-victory" viewBox="0 0 140 160"><use href="#hal-champion"/></svg>
+      </div>
+      <h1 class="victory-title" data-i18n="boss_defeated">CHALLENGE COMPLETE!</h1>
       <div class="victory-stats" id="victory-stats"></div>
       <div class="solution-box" id="solution-box">
         <h3>📖 <span data-i18n="full_solution">Full Solution</span></h3>
@@ -168,6 +170,7 @@
     <p class="copyright" data-i18n="copyright_footer">© 2026 Hallha. All rights reserved.</p>
   </footer>
 
+  <script src="js/hal.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/gamification.js"></script>
   <script src="js/app.js"></script>
