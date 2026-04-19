@@ -444,6 +444,26 @@ const App = (() => {
     });
   }
 
+  // Trigger a one-shot reaction animation on the current round's Hal character.
+  // emotion: 'celebrate' | 'confused'
+  function halReact(emotion) {
+    const hal = els.roundContent && els.roundContent.querySelector('.hal');
+    const hero = els.roundContent && els.roundContent.querySelector('.round-hero');
+    if (!hal) return;
+    const cls = emotion === 'confused' ? 'hal-confused' : 'hal-celebrate';
+    hal.classList.remove('hal-celebrate', 'hal-confused');
+    // Force reflow so the class re-add restarts the animation
+    void hal.offsetWidth;
+    hal.classList.add(cls);
+    if (emotion === 'celebrate' && hero) {
+      hero.classList.remove('hal-celebrating');
+      void hero.offsetWidth;
+      hero.classList.add('hal-celebrating');
+      setTimeout(() => hero.classList.remove('hal-celebrating'), 1000);
+    }
+    setTimeout(() => hal.classList.remove(cls), 1000);
+  }
+
   function handleRound1Answer(btn, roundData, allButtons) {
     const chosen = parseInt(btn.dataset.index);
     const correct = roundData.correctIndex;
@@ -456,6 +476,7 @@ const App = (() => {
       setHealth(33);
       Gamification.showPointsPopup(10);
       Gamification.shakeScreen();
+      halReact('celebrate');
 
       setTimeout(() => {
         const cont = document.createElement('button');
@@ -467,6 +488,7 @@ const App = (() => {
     } else {
       btn.classList.add('wrong');
       mistakes++;
+      halReact('confused');
 
       if (!els.roundContent.querySelector('.hint-box')) {
         const hint = document.createElement('div');
@@ -537,6 +559,7 @@ const App = (() => {
       pip.classList.add('done-correct');
       feedback.innerHTML = `<div class="blitz-result correct">${t('feedback_correct')}</div>`;
       Gamification.showPointsPopup(10);
+      halReact('celebrate');
       battlePoints += 10;
     } else {
       mistakes++;
@@ -545,6 +568,7 @@ const App = (() => {
       pip.classList.add('done-wrong');
       const rightAnswer = current.isTrue ? t('feedback_true') : t('feedback_false');
       feedback.innerHTML = `<div class="blitz-result wrong">${t('feedback_wrong')} ${rightAnswer}</div>`;
+      halReact('confused');
     }
 
     blitzIndex++;
@@ -640,11 +664,13 @@ const App = (() => {
       setHealth(100);
       Gamification.showPointsPopup(10);
       Gamification.shakeScreen();
+      halReact('celebrate');
 
-      setTimeout(() => showVictory(), 800);
+      setTimeout(() => showVictory(), 1000);
     } else {
       btn.classList.add('wrong');
       mistakes++;
+      halReact('confused');
 
       if (!els.roundContent.querySelector('.hint-box')) {
         const hint = document.createElement('div');

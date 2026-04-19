@@ -2186,3 +2186,118 @@ input:focus,
   .round-hero .hal  { width: 80px;  height: 92px;  }
   .victory-mascot .hal { width: 130px; height: 150px; }
 }
+
+/* ========================================
+   Hal — entrance + reaction animations
+   ======================================== */
+
+/* Landing hero mascot entrance */
+.hero-mascot {
+  animation: halHeroEntrance 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 0.05s;
+}
+@keyframes halHeroEntrance {
+  0%   { opacity: 0; transform: translateY(-26px) scale(0.7) rotate(-6deg); }
+  60%  { opacity: 1; transform: translateY(4px)   scale(1.05) rotate(2deg); }
+  100% { opacity: 1; transform: translateY(0)     scale(1)    rotate(0); }
+}
+
+/* In-round Hal entrance */
+.round-hero {
+  animation: halRoundEntrance 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes halRoundEntrance {
+  0%   { opacity: 0; transform: translateY(18px) scale(0.8); }
+  65%  { opacity: 1; transform: translateY(-4px) scale(1.06); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* Celebrate — bounce + playful rotate (overrides idle via .hal.hal-* specificity) */
+.hal.hal-celebrate {
+  animation: halCelebrate 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 1;
+}
+@keyframes halCelebrate {
+  0%   { transform: translateY(0) rotate(0); }
+  22%  { transform: translateY(-22px) rotate(-10deg) scale(1.08); }
+  44%  { transform: translateY(0)    rotate(8deg)   scale(1); }
+  66%  { transform: translateY(-10px) rotate(-4deg) scale(1.03); }
+  88%  { transform: translateY(0)    rotate(2deg); }
+  100% { transform: translateY(0)    rotate(0); }
+}
+
+/* Confused — subtle wobble + head tilt */
+.hal.hal-confused {
+  animation: halConfused 0.8s ease-in-out 1;
+}
+@keyframes halConfused {
+  0%, 100% { transform: rotate(0) translateX(0); }
+  20%      { transform: rotate(-6deg) translateX(-3px); }
+  40%      { transform: rotate(5deg)  translateX(3px); }
+  60%      { transform: rotate(-3deg) translateX(-2px); }
+  80%      { transform: rotate(2deg)  translateX(1px); }
+}
+
+/* Morph — used when round changes (dissolve + scale) */
+.hal.hal-morph-out {
+  animation: halMorphOut 0.4s ease-in forwards;
+}
+.hal.hal-morph-in {
+  animation: halMorphIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes halMorphOut {
+  0%   { opacity: 1; transform: scale(1)    rotate(0); filter: brightness(1); }
+  50%  { opacity: 1; transform: scale(1.18) rotate(8deg); filter: brightness(1.5) blur(1px); }
+  100% { opacity: 0; transform: scale(0.4)  rotate(-12deg); filter: brightness(2) blur(4px); }
+}
+@keyframes halMorphIn {
+  0%   { opacity: 0; transform: scale(0.4)  rotate(12deg);  filter: brightness(2)   blur(4px); }
+  40%  { opacity: 1; transform: scale(1.18) rotate(-6deg);  filter: brightness(1.4) blur(1px); }
+  100% { opacity: 1; transform: scale(1)    rotate(0);      filter: brightness(1)   blur(0); }
+}
+
+/* Victory — full triumphant entrance for the Champion on the victory screen */
+.hal.hal-victory {
+  animation: halVictoryEntrance 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes halVictoryEntrance {
+  0%   { opacity: 0; transform: translateY(50px) scale(0.5) rotate(-18deg); }
+  55%  { opacity: 1; transform: translateY(-12px) scale(1.12) rotate(6deg); }
+  80%  { transform: translateY(3px) scale(0.97) rotate(-2deg); }
+  100% { transform: translateY(0) scale(1) rotate(0); }
+}
+
+/* Sparkle burst for celebrate moments — pure CSS pseudo-elements */
+.round-hero.hal-celebrating::before,
+.round-hero.hal-celebrating::after {
+  content: '✨';
+  position: absolute;
+  font-size: 20px;
+  opacity: 0;
+  pointer-events: none;
+  animation: halSparkle 0.9s ease-out;
+}
+.round-hero.hal-celebrating {
+  position: relative;
+}
+.round-hero.hal-celebrating::before { left: 18%; top: 10%; animation-delay: 0.05s; }
+.round-hero.hal-celebrating::after  { right: 18%; top: 15%; animation-delay: 0.2s; }
+
+@keyframes halSparkle {
+  0%   { opacity: 0; transform: translateY(0) scale(0.5) rotate(0); }
+  50%  { opacity: 1; transform: translateY(-18px) scale(1.3) rotate(180deg); }
+  100% { opacity: 0; transform: translateY(-36px) scale(0.7) rotate(360deg); }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .hal,
+  .hal.hal-celebrate,
+  .hal.hal-confused,
+  .hal.hal-morph-in,
+  .hal.hal-morph-out,
+  .hero-mascot,
+  .round-hero {
+    animation-duration: 0.01s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
