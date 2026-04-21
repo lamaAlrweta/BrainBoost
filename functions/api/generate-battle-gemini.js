@@ -273,7 +273,11 @@ export const onRequestPost = async ({ request, env }) => {
 
   const url = `${GEMINI_ENDPOINT}?key=${env.GEMINI_API_KEY}`;
 
-  const maxRetries = 3;
+  // 5 attempts with exponential backoff (1s → 2s → 4s → 8s between).
+  // Gemini's free tier has occasional 503 "high demand" spikes that last a
+  // few seconds; the extra retries almost always clear them before the user
+  // sees an error.
+  const maxRetries = 5;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const r = await fetch(url, {
@@ -308,7 +312,8 @@ export const onRequestPost = async ({ request, env }) => {
       // Retry on rate limit / server errors
       const retriable = r.status === 429 || r.status >= 500;
       if (retriable && attempt < maxRetries) {
-        await new Promise(res => setTimeout(res, attempt * 2000));
+        // Exponential backoff: 1s, 2s, 4s, 8s
+        await new Promise(res => setTimeout(res, Math.pow(2, attempt - 1) * 1000));
         continue;
       }
 
