@@ -1,5 +1,5 @@
 // ========================================
-// حلها (Hallha) - Main App Logic
+// حلّها (Hallha) - Main App Logic
 // ========================================
 
 const App = (() => {
@@ -437,7 +437,7 @@ const App = (() => {
   }
 
   // ========================================
-  // Round 1: حلها / Solve It (Multiple Choice)
+  // Round 1: حلّها / Solve It (Multiple Choice)
   // ========================================
   function renderRound1() {
     const r = battleData.round1;

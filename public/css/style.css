@@ -1,10 +1,10 @@
 /* ========================================
-   حلها (Hallha) - Light Theme
+   حلّها (Hallha) - Light Theme
    ======================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Droid+Arabic+Kufi&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
 
 * {
   margin: 0;
@@ -48,9 +48,35 @@ body {
 
 /* RTL Support */
 [dir="rtl"] {
-  font-family: 'Droid Arabic Kufi', 'Inter', -apple-system, sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', 'Inter', -apple-system, sans-serif;
   text-align: right;
   line-height: 1.7;
+}
+
+/* IBM Plex Sans Arabic only ships weights 300–700. The English CSS uses
+   800/900 on several headings — leaving those in RTL causes faux-bold,
+   which is what made fonts look inconsistent between elements. Cap
+   heading weights at 700 for Arabic so every bold renders NATIVELY. */
+[dir="rtl"] .how-it-works h2,
+[dir="rtl"] .step-card h3,
+[dir="rtl"] .feature h3,
+[dir="rtl"] .input-card-title,
+[dir="rtl"] .round-title,
+[dir="rtl"] .victory-title,
+[dir="rtl"] .card-title,
+[dir="rtl"] .boss-name,
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3 {
+  font-weight: 700; /* native bold in Plex, not faux-bold */
+}
+
+/* The logo + hero title are the ONLY exceptions — they use Kufi display
+   font where faux-bold actually looks fine (and the weight-900 is part
+   of their display character). */
+[dir="rtl"] .logo-text,
+[dir="rtl"] .hero-title {
+  font-weight: 900;
 }
 
 /* Single source of truth for Arabic font consistency.
@@ -79,7 +105,7 @@ body {
 [dir="rtl"] .stat,
 [dir="rtl"] .stat-label,
 [dir="rtl"] .stat-value {
-  font-family: 'Droid Arabic Kufi', 'IBM Plex Sans Arabic', 'Inter', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', 'Inter', sans-serif;
 }
 
 [dir="rtl"] .hero {
@@ -87,14 +113,14 @@ body {
 }
 
 [dir="rtl"] .hero-subtitle {
-  font-family: 'Droid Arabic Kufi', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   font-size: 24px;
   font-weight: 700;
   line-height: 1.8;
 }
 
 [dir="rtl"] .hero-desc {
-  font-family: 'Droid Arabic Kufi', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   font-size: 16px;
   line-height: 2;
   font-weight: 400;
@@ -102,14 +128,14 @@ body {
 }
 
 [dir="rtl"] .hero-badge {
-  font-family: 'Droid Arabic Kufi', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   font-size: 13px;
   letter-spacing: 0;
   font-weight: 700;
 }
 
 [dir="rtl"] .how-it-works h2 {
-  font-family: 'Droid Arabic Kufi', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   font-size: 32px;
   font-weight: 800;
   text-align: center;
@@ -120,13 +146,13 @@ body {
 }
 
 [dir="rtl"] .step-card h3 {
-  font-family: 'Droid Arabic Kufi', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   font-size: 18px;
   font-weight: 800;
 }
 
 [dir="rtl"] .step-card p {
-  font-family: 'Droid Arabic Kufi', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   font-size: 15px;
   line-height: 1.9;
   font-weight: 400;
@@ -149,13 +175,13 @@ body {
 }
 
 [dir="rtl"] .feature h3 {
-  font-family: 'Droid Arabic Kufi', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   font-size: 17px;
   font-weight: 800;
 }
 
 [dir="rtl"] .feature p {
-  font-family: 'Droid Arabic Kufi', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   font-size: 14px;
   line-height: 1.9;
   font-weight: 400;
@@ -186,7 +212,7 @@ body {
 }
 
 [dir="rtl"] .landing-footer {
-  font-family: 'Droid Arabic Kufi', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   font-size: 15px;
   font-weight: 400;
   text-align: center;
@@ -199,7 +225,7 @@ body {
 }
 
 [dir="rtl"] .input-desc {
-  font-family: 'Droid Arabic Kufi', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   font-weight: 400;
   color: #4B5563;
   line-height: 1.9;
@@ -208,7 +234,7 @@ body {
 [dir="rtl"] textarea,
 [dir="rtl"] input,
 [dir="rtl"] select {
-  font-family: 'Droid Arabic Kufi', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   text-align: right;
 }
 
@@ -223,7 +249,7 @@ body {
 [dir="rtl"] .solution-text {
   text-align: right;
   direction: rtl;
-  font-family: 'Droid Arabic Kufi', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   line-height: 2;
   color: #4B5563;
 }
@@ -333,7 +359,7 @@ body {
 }
 
 [dir="rtl"] .hero-tagline {
-  font-family: 'Droid Arabic Kufi', 'IBM Plex Sans Arabic', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   font-size: 28px;
   line-height: 1.8;
 }
@@ -504,7 +530,7 @@ body {
 [dir="rtl"] .app-footer,
 [dir="rtl"] .landing-footer .copyright,
 [dir="rtl"] .app-footer .copyright {
-  font-family: 'Droid Arabic Kufi', 'IBM Plex Sans Arabic', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
 }
 
 /* ========================================
@@ -581,12 +607,19 @@ body {
   color: transparent;
 }
 
-/* Arabic logo uses the Kufi display font for a proper brand feel */
+/* Arabic logo uses the Kufi display font for a proper brand feel.
+   This and .hero-title are the ONLY places Kufi is primary — everywhere
+   else uses IBM Plex Sans Arabic for consistent, properly-weighted body text. */
 [dir="rtl"] .logo-text {
   font-family: 'Droid Arabic Kufi', 'IBM Plex Sans Arabic', sans-serif;
   font-size: 32px;
   line-height: 1.1;
   padding-bottom: 3px; /* Kufi descender balance */
+}
+
+[dir="rtl"] .hero-title {
+  font-family: 'Droid Arabic Kufi', 'IBM Plex Sans Arabic', sans-serif;
+  line-height: 1.2;
 }
 
 .logo-text.accent {
@@ -1195,7 +1228,7 @@ body {
 .provider-badge.provider-claude  { background: rgba(212, 131, 69, 0.15); color: #B86A28; }
 .provider-badge.provider-gemini  { background: rgba(66, 133, 244, 0.15); color: #1A73E8; }
 [dir="rtl"] .provider-badge {
-  font-family: 'Droid Arabic Kufi', 'IBM Plex Sans Arabic', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
 }
 
 .health-bar-container {
@@ -1332,7 +1365,7 @@ body {
 
 /* Consistent Arabic font across every label/tag on the platform */
 [dir="rtl"] .round-header-tag {
-  font-family: 'Droid Arabic Kufi', 'IBM Plex Sans Arabic', sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
   font-size: 15px;
   padding: 10px 18px;
   line-height: 1.3;
@@ -1359,7 +1392,7 @@ body {
   color: var(--text);
 }
 
-/* Round 1 "حلها" (Solve It) - Multiple Choice */
+/* Round 1 "حلّها" (Solve It) - Multiple Choice */
 .options-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2164,7 +2197,7 @@ input:focus,
 /* ========================================
    Hal Character (mascot)
    Three evolving forms:
-   - hal-curious  → الفضولي  → Round 1 "حلها"
+   - hal-curious  → الفضولي  → Round 1 "حلّها"
    - hal-thinker  → المفكِّر → Round 2 "افهمها"
    - hal-champion → البطل   → Round 3 "اتقنها"
    ======================================== */

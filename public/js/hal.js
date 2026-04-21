@@ -1,9 +1,9 @@
 // ========================================
-// حلها (Hallha) — Hal character SVG sprite
+// حلّها (Hallha) — Hal character SVG sprite
 // ========================================
 // "Hal" is the platform's mascot. Three evolving forms mirror the
 // student's growth arc through the rounds:
-//   hal-curious  → الفضولي  → Round 1 "حلها"  (Solve It)
+//   hal-curious  → الفضولي  → Round 1 "حلّها"  (Solve It)
 //   hal-thinker  → المفكِّر → Round 2 "افهمها" (Understand It)
 //   hal-champion → البطل   → Round 3 "اتقنها" (Master It)
 //
