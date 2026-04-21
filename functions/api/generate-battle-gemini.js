@@ -185,6 +185,60 @@ function getDemoBattle(question) {
 const GEMINI_MODEL = 'gemini-2.5-flash';
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
+// Strict JSON schema — forces Gemini to return EXACTLY the shape the
+// frontend expects. Without this, Gemini 2.5 Flash ignores the example
+// schema in the prompt and invents its own structure (e.g. 'learning_journey'
+// arrays instead of our round1/round2/round3 objects).
+const BATTLE_SCHEMA = {
+  type: 'object',
+  properties: {
+    bossName: { type: 'string' },
+    bossEmoji: { type: 'string' },
+    round1: {
+      type: 'object',
+      properties: {
+        type: { type: 'string' },
+        question: { type: 'string' },
+        options: { type: 'array', items: { type: 'string' } },
+        correctIndex: { type: 'integer' },
+        hint: { type: 'string' }
+      },
+      required: ['type', 'question', 'options', 'correctIndex', 'hint']
+    },
+    round2: {
+      type: 'object',
+      properties: {
+        type: { type: 'string' },
+        statements: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              text: { type: 'string' },
+              isTrue: { type: 'boolean' }
+            },
+            required: ['text', 'isTrue']
+          }
+        }
+      },
+      required: ['type', 'statements']
+    },
+    round3: {
+      type: 'object',
+      properties: {
+        type: { type: 'string' },
+        question: { type: 'string' },
+        options: { type: 'array', items: { type: 'string' } },
+        correctIndex: { type: 'integer' },
+        hint: { type: 'string' }
+      },
+      required: ['type', 'question', 'options', 'correctIndex', 'hint']
+    },
+    fullSolution: { type: 'string' }
+  },
+  required: ['bossName', 'bossEmoji', 'round1', 'round2', 'round3', 'fullSolution']
+};
+
 // Safety thresholds tuned for EDUCATIONAL content. Default Gemini safety
 // settings sometimes over-block legitimate homework topics (historical
 // conflicts, chemistry reactions, biology). BLOCK_ONLY_HIGH allows educational
@@ -266,7 +320,14 @@ export const onRequestPost = async ({ request, env }) => {
     generationConfig: {
       temperature: 0.7,
       maxOutputTokens: 2048,
-      responseMimeType: 'application/json'  // Native JSON mode — no code fences
+      responseMimeType: 'application/json',
+      // Force the EXACT schema our frontend expects. Without this, Gemini
+      // 2.5 Flash invents its own JSON shape (e.g. learning_journey arrays)
+      // and the frontend can't render it.
+      responseSchema: BATTLE_SCHEMA,
+      // Disable thinking mode — it adds 5-8s of latency and for homework
+      // tutoring at K-12 level, the quality gain isn't worth the wait.
+      thinkingConfig: { thinkingBudget: 0 }
     },
     safetySettings: SAFETY_SETTINGS
   };
