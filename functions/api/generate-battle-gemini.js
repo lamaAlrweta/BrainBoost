@@ -102,12 +102,18 @@ You MUST respond with valid JSON only - no markdown, no code fences, no extra te
 
 Given a homework question, generate a 3-round learning journey that teaches the student the concepts needed to truly understand and solve it.
 
-The three rounds map to the growth arc of the student:
-- Round 1 "حلها" (Solve It) — first attempt, curious beginner. A multiple-choice question about a KEY CONCEPT they need to solve the homework.
-- Round 2 "افهمها" (Understand It) — deepening comprehension. True/false statements that test whether they grasp the underlying ideas, not just recognize them.
-- Round 3 "اتقنها" (Master It) — confident mastery. An EASY multiple choice question directly tied to the homework answer, so a student who paid attention feels they've earned it.
+The three rounds are a TEACHING JOURNEY, not three versions of the same question. Each round builds the student's understanding step by step:
 
-IMPORTANT RULES:
+- Round 1 "حلها" (Solve It) — Teach the FOUNDATIONAL building-block concept. Identify the PREREQUISITE idea a student needs to have in their head BEFORE they can tackle the homework. This round MUST NOT rephrase or restate the homework question. It asks about a simpler, more basic concept that the homework assumes knowledge of. Example: If homework is "What nuclear reaction powers the sun?" → Round 1 asks "When two small atoms join into one bigger atom, what is that process called?" — teaching the word 'fusion' in isolation first. The student who didn't know the homework answer can STILL answer this by thinking from basics.
+
+- Round 2 "افهمها" (Understand It) — Clear up COMMON MISCONCEPTIONS about the Round-1 concept. Use true/false statements that catch the typical wrong intuitions students have, so they see the difference between what feels true and what IS true. Statements should be surprising or counter-intuitive, not restatements of Round 1. Example (fusion): "TRUE or FALSE: The sun burns its fuel like a giant campfire." (False — combustion ≠ fusion; this catches the common misconception.)
+
+- Round 3 "اتقنها" (Master It) — NOW apply the concept back to the homework. This is the round that directly answers the homework question, using the concept the student just learned in rounds 1+2. The question can be close to the original homework, and the correct answer IS the homework's answer. If the student paid attention, they now have the tools to answer it confidently.
+
+CRITICAL PEDAGOGICAL RULES:
+- DO NOT rephrase the homework as Round 1. Round 1 must teach a PREREQUISITE concept — something simpler that the homework implicitly assumes. If a student who was confused by the homework sees Round 1 and thinks "this is the same question", you have FAILED your job. Round 1 should feel easier and more fundamental than the homework itself.
+- The student should be able to go: confused by homework → gets Round 1 (basics click) → gets Round 2 (misconceptions cleared) → NOW can answer Round 3 (which is the homework). That's the journey.
+- Round 3 is the ONLY round tied directly to the homework answer. Rounds 1 and 2 build the foundation.
 - Round 3 MUST be an easy multiple choice question (NOT an essay or open-ended). Make it simple enough that a student who paid attention in rounds 1 and 2 will get it right and feel proud.
 - The fullSolution MUST start with the CLEAR DIRECT ANSWER to the homework question (e.g., "Answer: c. alleles"), THEN give a short explanation after.
 - If an image is attached, read the homework question directly from the image and solve it.
@@ -319,7 +325,9 @@ export const onRequestPost = async ({ request, env }) => {
     ],
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 2048,
+      // 1536 is enough for our JSON schema (3 rounds + solution) and
+      // shaves ~30% off latency vs 2048 without truncating outputs.
+      maxOutputTokens: 1536,
       responseMimeType: 'application/json',
       // Force the EXACT schema our frontend expects. Without this, Gemini
       // 2.5 Flash invents its own JSON shape (e.g. learning_journey arrays)
