@@ -347,7 +347,15 @@ const App = (() => {
       }
 
       const lang = (typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en';
-      const res = await fetch('/api/generate-battle', {
+
+      // A/B test toggle: ?ai=gemini routes to the Gemini 2.5 Flash endpoint.
+      // Anything else (or no param) stays on the default Claude endpoint.
+      const aiProvider = new URLSearchParams(window.location.search).get('ai');
+      const apiEndpoint = aiProvider === 'gemini'
+        ? '/api/generate-battle-gemini'
+        : '/api/generate-battle';
+
+      const res = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question, subject, images, lang, turnstileToken }),
@@ -373,6 +381,17 @@ const App = (() => {
   function initBattle() {
     els.bossEmoji.textContent = battleData.bossEmoji || '📚';
     els.bossName.textContent = battleData.bossName || t('topic_loading');
+
+    // A/B test provider badge: only visible when ?ai=gemini or battle came
+    // from Gemini endpoint. Tells tester which model produced this battle.
+    const providerBadge = document.getElementById('provider-badge');
+    if (providerBadge) {
+      const provider = battleData.provider || 'claude';
+      providerBadge.textContent = provider === 'gemini' ? '✨ Gemini' : '🔷 Claude';
+      providerBadge.className = 'provider-badge provider-' + provider;
+      providerBadge.style.display = '';
+    }
+
     setHealth(0);
     updateRoundDots(0);
     startRound(1);
