@@ -609,17 +609,24 @@ body {
 
 /* Arabic logo uses the Kufi display font for a proper brand feel.
    This and .hero-title are the ONLY places Kufi is primary — everywhere
-   else uses IBM Plex Sans Arabic for consistent, properly-weighted body text. */
+   else uses IBM Plex Sans Arabic for consistent, properly-weighted body text.
+
+   CRITICAL: Arabic diacritics (shadda ّ, fatha َ, etc.) sit ABOVE the letter.
+   With tight line-heights (1.0–1.1) those marks get clipped by the text box
+   and especially by -webkit-background-clip:text gradient masks. So we give
+   the logo generous line-height + top padding to keep ّ fully visible. */
 [dir="rtl"] .logo-text {
   font-family: 'Droid Arabic Kufi', 'IBM Plex Sans Arabic', sans-serif;
   font-size: 32px;
-  line-height: 1.1;
-  padding-bottom: 3px; /* Kufi descender balance */
+  line-height: 1.5;        /* room for shadda above */
+  padding-top: 6px;        /* extra guard for the gradient-clip mask */
+  padding-bottom: 4px;     /* Kufi descender balance */
 }
 
 [dir="rtl"] .hero-title {
   font-family: 'Droid Arabic Kufi', 'IBM Plex Sans Arabic', sans-serif;
-  line-height: 1.2;
+  line-height: 1.4;        /* big display heading — shadda needs headroom */
+  padding-top: 12px;       /* at clamp(48px,10vw,80px) the shadda is tall */
 }
 
 .logo-text.accent {
@@ -813,6 +820,19 @@ body {
   margin-bottom: 10px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
+}
+
+/* Arabic labels — English uses uppercase + wide letter-spacing to look
+   prominent at 11px. Neither applies to Arabic (no uppercase in the script,
+   and letter-spacing breaks Arabic letter-joining). So Arabic at 11px with
+   those treatments stripped looks TINY. Bump the size + clean the spacing
+   so Arabic labels read at the same visual weight as English. */
+[dir="rtl"] .form-group label {
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-bottom: 12px;
 }
 
 /* Unified Input Zone */
