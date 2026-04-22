@@ -348,11 +348,13 @@ const App = (() => {
 
       const lang = (typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en';
 
-      // A/B test toggle: ?ai=gemini routes to the Gemini 2.5 Flash endpoint.
-      // Anything else (or no param) stays on the default Claude endpoint.
+      // Gemini 2.5 Flash is the default model. ?ai=claude routes to the
+      // preserved Claude endpoint for fallback/testing only — students won't
+      // normally hit that path. Claude source still lives on the archive/
+      // claude-default branch if we ever need to fully revert.
       const aiProvider = new URLSearchParams(window.location.search).get('ai');
-      const apiEndpoint = aiProvider === 'gemini'
-        ? '/api/generate-battle-gemini'
+      const apiEndpoint = aiProvider === 'claude'
+        ? '/api/generate-battle-claude'
         : '/api/generate-battle';
 
       const res = await fetch(apiEndpoint, {
@@ -382,14 +384,13 @@ const App = (() => {
     els.bossEmoji.textContent = battleData.bossEmoji || '📚';
     els.bossName.textContent = battleData.bossName || t('topic_loading');
 
-    // A/B test provider badge: only visible when ?ai=gemini or battle came
-    // from Gemini endpoint. Tells tester which model produced this battle.
+    // Provider badge stays hidden by default in production. Still set
+    // a data attribute so we can inspect which model answered in devtools
+    // if needed, but no visible chip for students.
     const providerBadge = document.getElementById('provider-badge');
     if (providerBadge) {
-      const provider = battleData.provider || 'claude';
-      providerBadge.textContent = provider === 'gemini' ? '✨ Gemini' : '🔷 Claude';
-      providerBadge.className = 'provider-badge provider-' + provider;
-      providerBadge.style.display = '';
+      providerBadge.style.display = 'none';
+      providerBadge.dataset.provider = battleData.provider || 'gemini';
     }
 
     setHealth(0);

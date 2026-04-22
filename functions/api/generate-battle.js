@@ -1,9 +1,13 @@
-import Anthropic from '@anthropic-ai/sdk';
+// Parallel Gemini 2.5 Flash endpoint for A/B testing against the existing
+// Claude endpoint (functions/api/generate-battle.js). Same request/response
+// shape so the frontend can swap endpoints via a URL toggle (?ai=gemini).
+//
+// This file is PURELY ADDITIVE: it never touches the Claude path, and can be
+// deleted if Gemini doesn't win the evaluation.
 
-// Claude Vision only accepts these image types
+// Claude Vision accepts these; Gemini Vision accepts the same set.
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
-// Bilingual error messages
 const ERRORS = {
   unsupported_image: {
     en: 'Unsupported image format. Please upload a JPG, PNG, GIF, or WebP image (not HEIC or PDF).',
@@ -44,56 +48,38 @@ function errMsg(key, lang) {
   return entry[lang === 'ar' ? 'ar' : 'en'];
 }
 
-// Extract JSON from text that might be wrapped in markdown code fences
 function extractJSON(text) {
-  if (!text) throw new Error('Empty response from Claude');
-
-  // Try direct parse first
-  try {
-    return JSON.parse(text);
-  } catch (_) { /* fall through */ }
-
-  // Strip markdown code fences: ```json ... ``` or ``` ... ```
+  if (!text) throw new Error('Empty response from Gemini');
+  try { return JSON.parse(text); } catch (_) { /* fall through */ }
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
   if (fenced) {
-    try {
-      return JSON.parse(fenced[1]);
-    } catch (_) { /* fall through */ }
+    try { return JSON.parse(fenced[1]); } catch (_) { /* fall through */ }
   }
-
-  // Extract first {...} block
   const firstBrace = text.indexOf('{');
   const lastBrace = text.lastIndexOf('}');
   if (firstBrace >= 0 && lastBrace > firstBrace) {
-    try {
-      return JSON.parse(text.substring(firstBrace, lastBrace + 1));
-    } catch (_) { /* fall through */ }
+    try { return JSON.parse(text.substring(firstBrace, lastBrace + 1)); } catch (_) { /* fall through */ }
   }
-
-  throw new Error('Could not parse JSON from Claude response');
+  throw new Error('Could not parse JSON from Gemini response');
 }
 
-// Build the user message with optional images for Claude Vision
-function buildUserMessage(question, subject, images, lang) {
-  const content = [];
+// Build Gemini's "parts" array (Gemini uses inline_data for images instead
+// of Anthropic's source.base64 structure).
+function buildGeminiParts(question, subject, images, lang) {
+  const parts = [];
 
-  // Add images first so Claude can see them
   if (images && images.length > 0) {
     for (const img of images) {
-      // Skip unsupported media types (Claude only supports jpeg/png/gif/webp)
       if (!ALLOWED_IMAGE_TYPES.includes(img.type)) continue;
-      content.push({
-        type: 'image',
-        source: {
-          type: 'base64',
-          media_type: img.type,
+      parts.push({
+        inline_data: {
+          mime_type: img.type,
           data: img.data
         }
       });
     }
   }
 
-  // Add the text question
   const isArabic = lang === 'ar';
   const langInstruction = isArabic
     ? 'IMPORTANT: The user interface language is Arabic. You MUST write ALL text fields in the JSON response (topic title, round questions, options, statements, hints, fullSolution) in Arabic, even if the homework question itself is written in English. Translate concepts into natural Arabic. Only keep proper nouns, formulas, numbers, chemical symbols and code in their original form.'
@@ -105,9 +91,9 @@ function buildUserMessage(question, subject, images, lang) {
   } else {
     textParts.push('Please look at the attached image(s) and solve the homework question shown.');
   }
-  content.push({ type: 'text', text: textParts.join('\n') });
+  parts.push({ text: textParts.join('\n') });
 
-  return content;
+  return parts;
 }
 
 const SYSTEM_PROMPT = `You are حلّها (Hallha) — an intelligent tutoring platform for middle- and high-school students who are CONFUSED by their homework and need help understanding it. Your slogan: "حلّها مرة، افهمها للأبد" ("Solve it once, understand it forever").
@@ -162,7 +148,7 @@ WORKED EXAMPLE — study this carefully:
 Homework: "ما هو التفاعل النووي الذي يحدث في قلب الشمس؟" (What nuclear reaction happens in the sun's core?)
 Correct answer: الاندماج النووي (nuclear fusion)
 
-❌ BAD Round 1 (DO NOT DO THIS):
+❌ BAD Round 1 (what you've been doing — DO NOT DO THIS):
 "ما التفاعل النووي الذي يحدث في الشمس؟" (What nuclear reaction happens in the sun?)
 → This is JUST THE HOMEWORK REPHRASED. A confused student is still confused.
 
@@ -179,6 +165,7 @@ Options: ['الاندماج النووي', 'الانشطار النووي', 'ا�
 
 ✅ GOOD Round 3 (NOW apply to the homework):
 "بما أنك تعلّمت أن الاندماج النووي يحدث عند درجات حرارة عالية جداً، ما نوع التفاعل الذي يحدث في قلب الشمس؟"
+(Since you learned fusion needs extreme heat, what reaction happens in the sun's core?)
 Options: ['الاندماج النووي', 'الانشطار النووي', 'الاحتراق الكيميائي', 'التحلل الإشعاعي']
 → Correct: الاندماج النووي. Student answers confidently now.
 
@@ -269,14 +256,14 @@ OTHER RULES:
 
 - If an image is attached, first READ the homework question from the image, then apply the rules above.
 - AT LEAST ONE of the three rounds MUST frame its question around a concrete everyday scenario (cooking, phone battery, pizza, sports, money, etc.) so the concept connects to real life.
-- Language: ALL text fields must be in the interface language from the user message — even if the homework itself is in a different language.
-- "bossName" = TOPIC TITLE (2–6 words describing WHAT is being learned). Educational heading, never a villain. Good: 'الاندماج النووي', 'Photosynthesis Basics', 'Newton's Second Law'. Bad: 'سيد الكسور', 'The Fraction Phantom'.
+- Language: ALL text fields (topic title, questions, options, statements, hints, fullSolution) must be in the interface language from the user message — even if the homework itself is in a different language.
+- "bossName" field = TOPIC TITLE (2–6 words describing WHAT is being learned). Educational heading, never a villain. Good: 'الاندماج النووي', 'Photosynthesis Basics', 'Newton's Second Law'. Bad: 'سيد الكسور', 'The Fraction Phantom'.
 - "bossEmoji" = subject icon (📐 ⚗️ 🧬 📖 💼 📊 🌍 ☀️ etc.). NEVER villain emojis (👾 👹 🐉).
-- fullSolution starts with "ANSWER: [direct answer]", then 2–3 sentences explaining WHY, connecting back to the Round 1 concept.
+- fullSolution: starts with "ANSWER: [direct answer]", then 2–3 sentences explaining WHY. Written in interface language.
 - Respond with valid JSON only — no markdown, no code fences, no preamble.
 
 ═══════════════════════════════════════
-JSON SCHEMA:
+JSON SCHEMA (your output format):
 ═══════════════════════════════════════
 
 {
@@ -300,28 +287,24 @@ JSON SCHEMA:
     "question": "NOW applies the Round-1 concept to the actual homework subject. The correct answer IS the homework's answer. The student, having learned rounds 1+2, answers this confidently.",
     "options": ["Four choices — correct is the homework answer"],
     "correctIndex": 0,
-    "hint": "A one-line hint if they get it wrong"
+    "hint": "Reminds the student of the concept from Round 1"
   },
-  "fullSolution": "ANSWER: [the clear, direct answer to the homework question]\\n\\n[Then a short 2-3 sentence explanation of WHY this is the answer]"
+  "fullSolution": "ANSWER: [direct homework answer]\\n\\n[2–3 sentences tying it back to the Round 1 concept, so the student sees the WHOLE picture]"
 }`;
 
-// Demo battle data for when no API key is set
+// Demo battle (same as Claude version for parity) when no API key is set
 function getDemoBattle(question) {
   return {
     demo: true,
-    bossName: 'Demo Topic',
+    provider: 'gemini',
+    bossName: 'Demo Topic (Gemini)',
     bossEmoji: '📚',
     round1: {
       type: 'quick_draw',
-      question: 'This is a demo! Which of these is the correct approach to start solving this problem?',
-      options: [
-        'Break it down into smaller parts',
-        'Guess randomly',
-        'Skip it entirely',
-        'Copy from the internet'
-      ],
+      question: 'This is a Gemini demo! Which of these is the correct approach to start solving a problem?',
+      options: ['Break it down into smaller parts', 'Guess randomly', 'Skip it entirely', 'Copy from the internet'],
       correctIndex: 0,
-      hint: "Think about how you'd eat an elephant - one bite at a time!"
+      hint: "Think about how you'd eat an elephant — one bite at a time!"
     },
     round2: {
       type: 'true_false_blitz',
@@ -334,24 +317,87 @@ function getDemoBattle(question) {
     round3: {
       type: 'final_strike_mc',
       question: 'What is the FIRST step to solving any homework problem?',
-      options: [
-        'Read and understand the question',
-        'Guess the answer immediately',
-        'Skip it and move on',
-        'Copy from a friend'
-      ],
+      options: ['Read and understand the question', 'Guess the answer immediately', 'Skip it and move on', 'Copy from a friend'],
       correctIndex: 0,
       hint: "Always start by understanding what's being asked!"
     },
     fullSolution:
-      '🎮 This is DEMO MODE! To get real AI-powered battles, set the ANTHROPIC_API_KEY secret.\n\nGet your key at: https://console.anthropic.com/\n\nYour original question was: "' +
+      '🧪 This is Gemini DEMO MODE! To run real Gemini-powered battles, set the GEMINI_API_KEY secret.\n\nGet your key at: https://aistudio.google.com/apikey\n\nYour original question was: "' +
       (question || '(image only)') +
       '"'
   };
 }
 
+const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+// Strict JSON schema — forces Gemini to return EXACTLY the shape the
+// frontend expects. Without this, Gemini 2.5 Flash ignores the example
+// schema in the prompt and invents its own structure (e.g. 'learning_journey'
+// arrays instead of our round1/round2/round3 objects).
+const BATTLE_SCHEMA = {
+  type: 'object',
+  properties: {
+    bossName: { type: 'string' },
+    bossEmoji: { type: 'string' },
+    round1: {
+      type: 'object',
+      properties: {
+        type: { type: 'string' },
+        question: { type: 'string' },
+        options: { type: 'array', items: { type: 'string' } },
+        correctIndex: { type: 'integer' },
+        hint: { type: 'string' }
+      },
+      required: ['type', 'question', 'options', 'correctIndex', 'hint']
+    },
+    round2: {
+      type: 'object',
+      properties: {
+        type: { type: 'string' },
+        statements: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              text: { type: 'string' },
+              isTrue: { type: 'boolean' }
+            },
+            required: ['text', 'isTrue']
+          }
+        }
+      },
+      required: ['type', 'statements']
+    },
+    round3: {
+      type: 'object',
+      properties: {
+        type: { type: 'string' },
+        question: { type: 'string' },
+        options: { type: 'array', items: { type: 'string' } },
+        correctIndex: { type: 'integer' },
+        hint: { type: 'string' }
+      },
+      required: ['type', 'question', 'options', 'correctIndex', 'hint']
+    },
+    fullSolution: { type: 'string' }
+  },
+  required: ['bossName', 'bossEmoji', 'round1', 'round2', 'round3', 'fullSolution']
+};
+
+// Safety thresholds tuned for EDUCATIONAL content. Default Gemini safety
+// settings sometimes over-block legitimate homework topics (historical
+// conflicts, chemistry reactions, biology). BLOCK_ONLY_HIGH allows educational
+// context while still blocking genuinely harmful content.
+const SAFETY_SETTINGS = [
+  { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_ONLY_HIGH' },
+  { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_ONLY_HIGH' },
+  { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+  { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+];
+
 export const onRequestPost = async ({ request, env }) => {
-  const hasApiKey = !!env.ANTHROPIC_API_KEY && env.ANTHROPIC_API_KEY !== 'your_api_key_here';
+  const hasApiKey = !!env.GEMINI_API_KEY && env.GEMINI_API_KEY !== 'your_api_key_here';
 
   let body;
   try {
@@ -363,8 +409,7 @@ export const onRequestPost = async ({ request, env }) => {
   const { question, subject, images, lang, turnstileToken } = body || {};
   const language = lang === 'ar' ? 'ar' : 'en';
 
-  // Cloudflare Turnstile verification (only enforced if the secret is configured,
-  // so local dev without Turnstile keys still works)
+  // Turnstile (same check as Claude endpoint)
   if (env.TURNSTILE_SECRET_KEY) {
     if (!turnstileToken) {
       return Response.json({ error: errMsg('turnstile_missing', language) }, { status: 400 });
@@ -381,16 +426,14 @@ export const onRequestPost = async ({ request, env }) => {
       });
       const verifyData = await verifyRes.json();
       if (!verifyData.success) {
-        console.warn('Turnstile verification failed:', verifyData['error-codes']);
         return Response.json({ error: errMsg('turnstile_failed', language) }, { status: 403 });
       }
     } catch (e) {
-      console.error('Turnstile siteverify network error:', e.message);
       return Response.json({ error: errMsg('turnstile_failed', language) }, { status: 503 });
     }
   }
 
-  // Filter images to only supported types
+  // Input validation
   const validImages = (images || []).filter(img => ALLOWED_IMAGE_TYPES.includes(img.type));
   const rejectedImages = (images || []).filter(img => !ALLOWED_IMAGE_TYPES.includes(img.type));
 
@@ -401,7 +444,6 @@ export const onRequestPost = async ({ request, env }) => {
     return Response.json({ error: errMsg('no_input', language) }, { status: 400 });
   }
 
-  // Check image size (Claude limit is ~5 MB per image, base64 is ~1.33x larger)
   for (const img of validImages) {
     const approxBytes = (img.data || '').length * 0.75;
     if (approxBytes > 5 * 1024 * 1024) {
@@ -409,50 +451,98 @@ export const onRequestPost = async ({ request, env }) => {
     }
   }
 
-  // Demo mode - return sample battle data
   if (!hasApiKey) {
     return Response.json(getDemoBattle(question));
   }
 
-  const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+  const requestBody = {
+    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    contents: [
+      {
+        role: 'user',
+        parts: buildGeminiParts(question, subject, validImages, language)
+      }
+    ],
+    generationConfig: {
+      temperature: 0.7,
+      // 1536 is enough for our JSON schema (3 rounds + solution) and
+      // shaves ~30% off latency vs 2048 without truncating outputs.
+      maxOutputTokens: 1536,
+      responseMimeType: 'application/json',
+      // Force the EXACT schema our frontend expects. Without this, Gemini
+      // 2.5 Flash invents its own JSON shape (e.g. learning_journey arrays)
+      // and the frontend can't render it.
+      responseSchema: BATTLE_SCHEMA,
+      // Disable thinking mode — it adds 5-8s of latency and for homework
+      // tutoring at K-12 level, the quality gain isn't worth the wait.
+      thinkingConfig: { thinkingBudget: 0 }
+    },
+    safetySettings: SAFETY_SETTINGS
+  };
 
-  const maxRetries = 3;
+  const url = `${GEMINI_ENDPOINT}?key=${env.GEMINI_API_KEY}`;
+
+  // 5 attempts with exponential backoff (1s → 2s → 4s → 8s between).
+  // Gemini's free tier has occasional 503 "high demand" spikes that last a
+  // few seconds; the extra retries almost always clear them before the user
+  // sees an error.
+  const maxRetries = 5;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const message = await anthropic.messages.create({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 2000,
-        system: SYSTEM_PROMPT,
-        messages: [
-          {
-            role: 'user',
-            content: buildUserMessage(question, subject, validImages, language)
-          }
-        ]
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
       });
 
-      const text = message.content.find(c => c.type === 'text')?.text || message.content[0]?.text || '';
-      const battle = extractJSON(text);
-      return Response.json(battle);
-    } catch (error) {
-      const status = error.status || error.statusCode || 0;
-      console.error(`API Error (attempt ${attempt}/${maxRetries}):`, status, error.message);
+      if (r.ok) {
+        const json = await r.json();
+        const text = json.candidates?.[0]?.content?.parts?.[0]?.text
+                  || json.candidates?.[0]?.content?.parts?.find(p => p.text)?.text
+                  || '';
 
-      // Retry on overloaded (529) or rate limit (429) or server errors (500+)
-      if ((status === 529 || status === 429 || status >= 500) && attempt < maxRetries) {
-        const waitTime = attempt * 2000; // 2s, 4s
-        await new Promise(r => setTimeout(r, waitTime));
+        if (!text) {
+          // Could be blocked by safety filters — Gemini returns finishReason: 'SAFETY'
+          const finishReason = json.candidates?.[0]?.finishReason;
+          console.error('Gemini returned no text. finishReason:', finishReason, 'raw:', JSON.stringify(json).slice(0, 500));
+          return Response.json({ error: errMsg('generic', language) }, { status: 500 });
+        }
+
+        try {
+          const battle = extractJSON(text);
+          battle.provider = 'gemini';  // Tag response so frontend can show which model answered
+          return Response.json(battle);
+        } catch (parseErr) {
+          console.error('Gemini JSON parse failed:', parseErr.message, 'text sample:', text.slice(0, 200));
+          return Response.json({ error: errMsg('generic', language) }, { status: 500 });
+        }
+      }
+
+      // Retry on rate limit / server errors
+      const retriable = r.status === 429 || r.status >= 500;
+      if (retriable && attempt < maxRetries) {
+        // Exponential backoff: 1s, 2s, 4s, 8s
+        await new Promise(res => setTimeout(res, Math.pow(2, attempt - 1) * 1000));
         continue;
       }
 
-      if (status === 529) {
+      // Non-retriable failure — classify and return
+      const errText = await r.text();
+      console.error(`Gemini API error ${r.status}:`, errText.slice(0, 300));
+
+      if (r.status === 429 || r.status === 503) {
         return Response.json({ error: errMsg('ai_busy', language) }, { status: 503 });
       }
-      if (status === 400) {
-        return Response.json({ error: errMsg('generic', language) }, { status: 400 });
-      }
-      if (status === 401 || status === 403) {
+      if (r.status === 401 || r.status === 403) {
         return Response.json({ error: errMsg('api_key', language) }, { status: 500 });
+      }
+      return Response.json({ error: errMsg('generic', language) }, { status: r.status === 400 ? 400 : 500 });
+
+    } catch (error) {
+      console.error(`Gemini fetch failed (attempt ${attempt}/${maxRetries}):`, error.message);
+      if (attempt < maxRetries) {
+        await new Promise(res => setTimeout(res, attempt * 2000));
+        continue;
       }
       return Response.json({ error: errMsg('generic', language) }, { status: 500 });
     }
