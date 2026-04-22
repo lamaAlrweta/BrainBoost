@@ -1,9 +1,11 @@
-// Parallel Gemini 2.5 Flash endpoint for A/B testing against the existing
-// Claude endpoint (functions/api/generate-battle.js). Same request/response
-// shape so the frontend can swap endpoints via a URL toggle (?ai=gemini).
+// Primary production endpoint — Gemini 2.5 Flash.
+// Selected after A/B testing against Claude Sonnet 4; Gemini wins on
+// cost (~7× cheaper at same accuracy for K-12 homework), speed (~2s
+// with thinking disabled), and native multilingual/Arabic handling.
 //
-// This file is PURELY ADDITIVE: it never touches the Claude path, and can be
-// deleted if Gemini doesn't win the evaluation.
+// Claude fallback lives in ./generate-battle-claude.js, reachable via
+// the frontend's ?ai=claude URL param. Full pre-switch source is also
+// preserved on the archive/claude-default branch + v2.0-claude-default tag.
 
 // Claude Vision accepts these; Gemini Vision accepts the same set.
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
