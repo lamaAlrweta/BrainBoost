@@ -1,4 +1,4 @@
-name = "hallha"
+name = "hallha-ai"
 compatibility_date = "2026-04-11"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "public"

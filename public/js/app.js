@@ -1,5 +1,5 @@
 // ========================================
-// حلها (Hallha) - Main App Logic
+// حلّها (Hallha) - Main App Logic
 // ========================================
 
 const App = (() => {
@@ -347,7 +347,17 @@ const App = (() => {
       }
 
       const lang = (typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en';
-      const res = await fetch('/api/generate-battle', {
+
+      // Gemini 2.5 Flash is the default model. ?ai=claude routes to the
+      // preserved Claude endpoint for fallback/testing only — students won't
+      // normally hit that path. Claude source still lives on the archive/
+      // claude-default branch if we ever need to fully revert.
+      const aiProvider = new URLSearchParams(window.location.search).get('ai');
+      const apiEndpoint = aiProvider === 'claude'
+        ? '/api/generate-battle-claude'
+        : '/api/generate-battle';
+
+      const res = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question, subject, images, lang, turnstileToken }),
@@ -373,6 +383,16 @@ const App = (() => {
   function initBattle() {
     els.bossEmoji.textContent = battleData.bossEmoji || '📚';
     els.bossName.textContent = battleData.bossName || t('topic_loading');
+
+    // Provider badge stays hidden by default in production. Still set
+    // a data attribute so we can inspect which model answered in devtools
+    // if needed, but no visible chip for students.
+    const providerBadge = document.getElementById('provider-badge');
+    if (providerBadge) {
+      providerBadge.style.display = 'none';
+      providerBadge.dataset.provider = battleData.provider || 'gemini';
+    }
+
     setHealth(0);
     updateRoundDots(0);
     startRound(1);
@@ -418,7 +438,7 @@ const App = (() => {
   }
 
   // ========================================
-  // Round 1: حلها / Solve It (Multiple Choice)
+  // Round 1: حلّها / Solve It (Multiple Choice)
   // ========================================
   function renderRound1() {
     const r = battleData.round1;

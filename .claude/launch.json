@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "hallha-pages",
+      "name": "hallha-ai-pages",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["wrangler", "pages", "dev", "--port", "8788", "--ip", "127.0.0.1"],
       "port": 8788
