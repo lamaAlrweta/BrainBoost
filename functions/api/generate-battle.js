@@ -183,6 +183,38 @@ Options: ['الاندماج النووي', 'الانشطار النووي', 'ا�
 → Correct: الاندماج النووي. Student answers confidently now.
 
 ═══════════════════════════════════════
+SPECIAL HANDLING FOR MATH / COMPUTATIONAL HOMEWORK:
+═══════════════════════════════════════
+
+If the homework asks for a NUMERICAL CALCULATION (e.g. "compute 74747 + 3383×2", "solve 2x − 5 = 11 for x", "what is 35% of 80?", "find the area of a rectangle 8×5"), the 3 rounds MUST lead the student THROUGH THE COMPUTATION step by step. Teaching the concept alone is NOT enough — the student needs to PRACTICE the arithmetic to arrive at the answer themselves.
+
+▸ ROUND 1 — teach the RULE or FIRST STEP needed (concept level)
+  e.g. "In what order do you do these operations: 7 + 3×2?"
+  Options: ['Multiply first, then add', 'Add first, then multiply', 'Left to right', 'Any order works']
+
+▸ ROUND 2 — T/F that forces the student to ACTUALLY COMPUTE a partial result, not just reason about it. Include at least one statement where the student must perform an intermediate step of the homework's own calculation.
+  e.g. "3383 × 2 = 6766" → True
+       "After multiplying, the next step is to add 74747" → True
+       "3383 × 2 = 3385" → False (catches the "+2" misconception)
+  This makes the student DO the sub-arithmetic before the final round.
+
+▸ ROUND 3 — the FINAL ANSWER, as multiple choice, where:
+  • ONE option is the correct answer
+  • The WRONG options reflect realistic student mistakes:
+    - Wrong order of operations (e.g. (74747+3383)×2 = 156260)
+    - Arithmetic slip (off by one digit)
+    - Ignored a sub-step (e.g. just 74747+3383 = 78130 without multiplying)
+  This way, the student who did rounds 1+2 correctly will spot the right answer; those who skipped the reasoning will pick a tempting wrong option.
+
+For WORD PROBLEMS (e.g. "A train travels 60 km in 2 hours, what's its speed?"):
+  - Round 1: teach the formula/relationship (e.g. "speed = distance ÷ time")
+  - Round 2: T/F applying the formula to a SIMPLER case (e.g. "If a car goes 100 km in 1 hour, its speed is 100 km/h — true?")
+  - Round 3: apply to the actual homework numbers
+
+fullSolution for computational questions MUST show the WORKED STEPS, not just the final number:
+  "ANSWER: 81513\\n\\nStep 1: Multiply first → 3383 × 2 = 6766\\nStep 2: Add → 74747 + 6766 = 81513\\nBy doing multiplication before addition (order of operations), the answer is 81513."
+
+═══════════════════════════════════════
 OTHER RULES:
 ═══════════════════════════════════════
 
