@@ -206,6 +206,17 @@ body {
   flex-direction: row-reverse;
 }
 
+/* Buttons with DOM order [text, icon] need their icon to stay on the
+   visually-right side in RTL too (Arabic readers expect 🚀 on the
+   right, at the start of the reading direction). Default flex 'row'
+   puts the icon on the left in RTL because the first DOM child goes
+   to the start (right). row-reverse flips it so icon ends up on the
+   right where it belongs. Applies to .battle-button (start, new
+   battle) and to .cta-button's icon span when present. */
+[dir="rtl"] .battle-button {
+  flex-direction: row-reverse;
+}
+
 [dir="rtl"] .cta-button {
   font-size: 20px;
   font-weight: 700;
@@ -787,7 +798,11 @@ body {
 }
 
 /* Title — flexbox so 🎉 emoji always sits on the START side (right in
-   RTL, left in LTR) without bidi quirks. */
+   RTL, left in LTR) without bidi quirks.
+   DOM order is [emoji-span, text-span]; default flex 'row' direction
+   means emoji is the first item — it ends up on the visual right in RTL
+   (the reading start) and on the visual left in LTR. nowrap so they
+   never split onto separate lines. */
 .share-title {
   font-size: 17px;
   font-weight: 800;
@@ -797,11 +812,14 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 .share-title-emoji {
   font-size: 19px;
   line-height: 1;
+  /* unicode-bidi: isolate keeps the emoji from interacting with the
+     RTL bidi run of the Arabic text — guarantees clean placement. */
+  unicode-bidi: isolate;
 }
 
 .share-subtitle {
