@@ -533,6 +533,103 @@ body {
   font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
 }
 
+/* Contact link in the footer */
+.contact-line {
+  margin-top: 8px;
+  font-size: 13px;
+}
+.contact-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  transition: background 0.15s ease, transform 0.15s ease;
+  display: inline-block;
+}
+.contact-link:hover {
+  background: rgba(232, 89, 106, 0.08);
+  transform: translateY(-1px);
+}
+[dir="rtl"] .contact-link {
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
+}
+
+/* ========================================
+   Share section (Victory screen) — appears
+   right after a win, peak emotional moment.
+   ======================================== */
+.share-section {
+  margin: 24px auto 16px;
+  padding: 20px 18px;
+  background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 100%);
+  border: 1px solid #fde68a;
+  border-radius: 16px;
+  text-align: center;
+  max-width: 480px;
+}
+.share-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+.share-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.share-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  background: white;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.share-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.share-btn:active { transform: translateY(0); }
+.share-btn-icon { font-size: 16px; line-height: 1; }
+.share-whatsapp:hover  { border-color: #25D366; }
+.share-instagram:hover { border-color: #E1306C; }
+.share-twitter:hover   { border-color: #000000; }
+.share-copy:hover      { border-color: var(--primary); }
+
+[dir="rtl"] .share-title,
+[dir="rtl"] .share-subtitle,
+[dir="rtl"] .share-btn {
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
+}
+
+/* Toast feedback below share buttons (e.g. "✓ Link copied") */
+.share-toast {
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #16a34a;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  min-height: 18px;
+}
+.share-toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ========================================
    App Page - Top Bar
    ======================================== */

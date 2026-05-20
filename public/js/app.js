@@ -116,9 +116,21 @@ const App = (() => {
 
     initCustomDropdown();
     initFileUpload();
+    initShareModal();
 
     Gamification.updateUI();
     checkMode();
+
+    // Analytics: identify the user's basic context on app load
+    if (typeof Analytics !== 'undefined') {
+      const lang = (typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en';
+      const isMobile = window.matchMedia('(max-width: 640px)').matches;
+      Analytics.identify({
+        lang_preference: lang,
+        device_type: isMobile ? 'mobile' : 'desktop',
+      });
+      Analytics.track('app_opened', { lang, device_type: isMobile ? 'mobile' : 'desktop' });
+    }
   }
 
   // ========================================
@@ -305,6 +317,21 @@ const App = (() => {
 
     const subject = selectedSubject;
 
+    // Analytics: homework submitted (entry to the funnel)
+    if (typeof Analytics !== 'undefined') {
+      const lang = (typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en';
+      Analytics.track('homework_submitted', {
+        subject,
+        lang,
+        has_text: !!question,
+        has_image: uploadedFiles.length > 0,
+        image_count: uploadedFiles.length,
+        question_length: question.length,
+      });
+      // Track which subject is picked (helps understand what students study)
+      Analytics.track('subject_selected', { subject });
+    }
+
     showScreen('loading');
     battlePoints = 0;
     mistakes = 0;
@@ -372,8 +399,27 @@ const App = (() => {
       battleData = payload;
       showScreen('battle');
       initBattle();
+
+      // Analytics: AI returned a battle (homework_submitted → battle_loaded
+      // forms the first segment of the funnel; drop-offs between these two
+      // events indicate API failures or slow responses)
+      if (typeof Analytics !== 'undefined') {
+        Analytics.track('battle_loaded', {
+          provider: payload.provider || 'gemini',
+          topic: payload.bossName,
+          subject: selectedSubject,
+          is_demo: !!payload.demo,
+        });
+      }
     } catch (err) {
       console.error('Battle generation failed:', err);
+      // Analytics: track failures so we can see how often / why API breaks
+      if (typeof Analytics !== 'undefined') {
+        Analytics.track('battle_error', {
+          error_message: (err && err.message) ? String(err.message).slice(0, 200) : 'unknown',
+          subject: selectedSubject,
+        });
+      }
       alert((err && err.message) ? err.message : t('err_generic'));
       showScreen('input');
     }
@@ -426,6 +472,18 @@ const App = (() => {
   function startRound(roundNum) {
     currentRound = roundNum;
     updateRoundDots(roundNum - 1);
+
+    // Analytics: round_started — the funnel goes
+    // homework_submitted → battle_loaded → round_started r=1 → round_completed r=1
+    // → round_started r=2 → ... → battle_completed
+    // Whichever step has the biggest drop-off is where we're losing students.
+    if (typeof Analytics !== 'undefined') {
+      Analytics.track('round_started', {
+        round_number: roundNum,
+        topic: battleData?.bossName,
+        subject: selectedSubject,
+      });
+    }
 
     // Re-trigger entrance animation on round content
     els.roundContent.style.animation = 'none';
@@ -504,7 +562,12 @@ const App = (() => {
         const cont = document.createElement('button');
         cont.className = 'continue-btn';
         cont.innerHTML = t('btn_next_round');
-        cont.addEventListener('click', () => startRound(2));
+        cont.addEventListener('click', () => {
+          if (typeof Analytics !== 'undefined') {
+            Analytics.track('round_completed', { round_number: 1, was_correct: true, topic: battleData?.bossName });
+          }
+          startRound(2);
+        });
         els.roundContent.appendChild(cont);
       }, 600);
     } else {
@@ -620,7 +683,17 @@ const App = (() => {
         const cont = document.createElement('button');
         cont.className = 'continue-btn';
         cont.innerHTML = t('btn_final_round');
-        cont.addEventListener('click', () => startRound(3));
+        cont.addEventListener('click', () => {
+          if (typeof Analytics !== 'undefined') {
+            Analytics.track('round_completed', {
+              round_number: 2,
+              blitz_correct: blitzCorrect,
+              blitz_total: statements.length,
+              topic: battleData?.bossName,
+            });
+          }
+          startRound(3);
+        });
         els.roundContent.appendChild(cont);
       }
     }, 1200);
@@ -780,10 +853,32 @@ const App = (() => {
 
     els.solutionText.textContent = battleData.fullSolution;
     Gamification.updateUI();
+
+    // Analytics: battle_completed — top of the funnel "success" event.
+    // (homework_submitted % that reach here = your true completion rate)
+    if (typeof Analytics !== 'undefined') {
+      Analytics.track('battle_completed', {
+        round_number: 3,  // round 3 always present
+        topic: battleData?.bossName,
+        subject: selectedSubject,
+        points_earned: result.pointsEarned,
+        is_perfect: isPerfect,
+        streak: result.streak,
+        new_badges_count: result.newBadges.length,
+        provider: battleData?.provider || 'gemini',
+      });
+      // Update user-level total counter so we can build retention cohorts
+      Analytics.identify({ total_battles_completed: (Gamification.getTotalBattles?.() || 1) });
+    }
   }
 
   // New battle
   function newBattle() {
+    // Analytics: student wants another round = strong engagement signal
+    if (typeof Analytics !== 'undefined') {
+      Analytics.track('new_battle_started');
+    }
+
     els.questionInput.value = '';
     uploadedFiles = [];
     if (els.fileList) els.fileList.innerHTML = '';
@@ -797,6 +892,128 @@ const App = (() => {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+  }
+
+  // ========================================
+  // Share modal — appears on the victory screen
+  // ========================================
+  // Bound once in init(). Each button pre-fills a share message in the
+  // current UI language and opens the right platform (or copies to clipboard).
+  // Every click is tracked via Analytics so we can see which platform actually
+  // drives referral traffic.
+  function initShareModal() {
+    const buttons = document.querySelectorAll('.share-btn');
+    if (!buttons.length) return;
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => handleShareClick(btn.dataset.platform));
+    });
+  }
+
+  async function handleShareClick(platform) {
+    const shareUrl = 'https://hallha-ai.pages.dev/';
+    const lang = (typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en';
+    const message = t('share_message');         // localized pre-filled text
+    const fullText = `${message} ${shareUrl}`;
+
+    // Analytics: record which platform the student picked
+    if (typeof Analytics !== 'undefined') {
+      Analytics.track('share_clicked', { platform, lang });
+    }
+
+    switch (platform) {
+      case 'whatsapp':
+        // Mobile + desktop deeplink. wa.me opens WhatsApp Web or the app.
+        window.open(`https://wa.me/?text=${encodeURIComponent(fullText)}`, '_blank', 'noopener');
+        break;
+
+      case 'twitter':
+        window.open(
+          `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}&url=${encodeURIComponent(shareUrl)}`,
+          '_blank',
+          'noopener'
+        );
+        break;
+
+      case 'instagram':
+        // Instagram doesn't accept pre-filled DMs from the web. Best UX:
+        // copy the message to clipboard so the student can paste into a
+        // story/DM after we open Instagram for them.
+        try { await navigator.clipboard.writeText(fullText); } catch (_) { /* ignore */ }
+        showShareToast(t('share_copied_for_instagram'));
+        window.open('https://www.instagram.com/', '_blank', 'noopener');
+        break;
+
+      case 'copy':
+        try {
+          await navigator.clipboard.writeText(fullText);
+          showShareToast(t('share_copied'));
+        } catch (_) {
+          // Fallback for older browsers — use a hidden textarea
+          const ta = document.createElement('textarea');
+          ta.value = fullText;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); showShareToast(t('share_copied')); } catch (_) {}
+          document.body.removeChild(ta);
+        }
+        break;
+
+      default:
+        // Native OS share sheet — when supported by the browser (mobile mostly)
+        if (navigator.share) {
+          try {
+            await navigator.share({ title: 'حلّها', text: message, url: shareUrl });
+          } catch (_) { /* user cancelled — no-op */ }
+        }
+    }
+  }
+
+  function showShareToast(text) {
+    const toast = document.getElementById('share-toast');
+    if (!toast) return;
+    toast.textContent = text;
+    toast.classList.add('visible');
+    setTimeout(() => toast.classList.remove('visible'), 2200);
+  }
+
+  // ========================================
+  // Contact link — opens Tally form (or mailto if form URL is a placeholder)
+  // ========================================
+  function initContactLink() {
+    const link = document.getElementById('contact-link');
+    if (!link) return;
+
+    // Read config from the data attributes on <html> (set via window vars below)
+    const tallyUrl   = window.HALLHA_CONFIG?.tallyFormUrl || '';
+    const supportMail = window.HALLHA_CONFIG?.supportEmail || '';
+
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (typeof Analytics !== 'undefined') {
+        Analytics.track('contact_clicked', {
+          method: tallyUrl ? 'tally_form' : 'mailto',
+        });
+      }
+
+      if (tallyUrl && !tallyUrl.startsWith('__')) {
+        window.open(tallyUrl, '_blank', 'noopener');
+      } else if (supportMail && !supportMail.startsWith('__')) {
+        window.location.href = `mailto:${supportMail}?subject=${encodeURIComponent('Hallha — feedback')}`;
+      } else {
+        // Both placeholders — silent fallback (config not done yet)
+        alert(t('contact_placeholder'));
+      }
+    });
+  }
+
+  // Hook initContactLink into the page lifecycle (runs once DOM is ready)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initContactLink);
+  } else {
+    initContactLink();
   }
 
   return { init };

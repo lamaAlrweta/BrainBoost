@@ -88,10 +88,51 @@
     <footer class="landing-footer">
       <p data-i18n="footer">Built by students, for students. Stop copying. Start thinking.</p>
       <p class="copyright" data-i18n="copyright_footer">© 2026 Hallha. All rights reserved.</p>
+      <p class="contact-line">
+        <a href="#" id="contact-link" class="contact-link" data-i18n="contact_us">💬 Contact us</a>
+      </p>
     </footer>
   </div>
 
+  <!-- Contact + share config — replace placeholders with real values once
+       you have a Tally form URL and a support Gmail. analytics.js looks
+       for window.HALLHA_CONFIG so both pages share the same values. -->
+  <script>
+    window.HALLHA_CONFIG = {
+      tallyFormUrl: '__TALLY_FORM_URL_PLACEHOLDER__',
+      supportEmail: '__SUPPORT_EMAIL_PLACEHOLDER__',
+    };
+  </script>
+
+  <!-- Analytics (PostHog + GA4 + CF Web Analytics) — runs in no-op mode
+       until you fill in the IDs inside analytics.js -->
+  <script src="js/analytics.js"></script>
+
   <script src="js/hal.js"></script>
   <script src="js/i18n.js"></script>
+
+  <!-- Tiny inline handler so the contact link works on the landing page
+       (app.js isn't loaded here). Mirrors the logic in app.js. -->
+  <script>
+    (function() {
+      const link = document.getElementById('contact-link');
+      if (!link) return;
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const cfg = window.HALLHA_CONFIG || {};
+        if (typeof Analytics !== 'undefined') {
+          Analytics.track('contact_clicked', {
+            method: cfg.tallyFormUrl && !cfg.tallyFormUrl.startsWith('__') ? 'tally_form' : 'mailto',
+            from_page: 'landing'
+          });
+        }
+        if (cfg.tallyFormUrl && !cfg.tallyFormUrl.startsWith('__')) {
+          window.open(cfg.tallyFormUrl, '_blank', 'noopener');
+        } else if (cfg.supportEmail && !cfg.supportEmail.startsWith('__')) {
+          window.location.href = 'mailto:' + cfg.supportEmail + '?subject=' + encodeURIComponent('Hallha — feedback');
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

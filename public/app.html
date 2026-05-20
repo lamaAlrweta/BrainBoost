@@ -163,13 +163,58 @@
         <h3>📖 <span data-i18n="full_solution">Full Solution</span></h3>
         <div class="solution-text" id="solution-text"></div>
       </div>
+
+      <!-- Share section — appears at peak emotional moment (right after victory) -->
+      <div class="share-section" id="share-section">
+        <h3 class="share-title">🎉 <span data-i18n="share_title">Tell your friends!</span></h3>
+        <p class="share-subtitle" data-i18n="share_subtitle">Help them solve their homework with Hallha</p>
+        <div class="share-buttons">
+          <button class="share-btn share-whatsapp" data-platform="whatsapp" aria-label="WhatsApp">
+            <span class="share-btn-icon">💚</span>
+            <span class="share-btn-label">WhatsApp</span>
+          </button>
+          <button class="share-btn share-instagram" data-platform="instagram" aria-label="Instagram">
+            <span class="share-btn-icon">📷</span>
+            <span class="share-btn-label">Instagram</span>
+          </button>
+          <button class="share-btn share-twitter" data-platform="twitter" aria-label="Twitter / X">
+            <span class="share-btn-icon">𝕏</span>
+            <span class="share-btn-label">X</span>
+          </button>
+          <button class="share-btn share-copy" data-platform="copy" aria-label="Copy link">
+            <span class="share-btn-icon">📋</span>
+            <span class="share-btn-label" data-i18n="share_copy">Copy link</span>
+          </button>
+        </div>
+        <div class="share-toast" id="share-toast" role="status" aria-live="polite"></div>
+      </div>
+
       <button class="battle-button" id="new-battle-btn">🚀 <span data-i18n="next_battle">New Challenge</span></button>
     </div>
   </div>
 
   <footer class="app-footer">
     <p class="copyright" data-i18n="copyright_footer">© 2026 Hallha. All rights reserved.</p>
+    <p class="contact-line">
+      <a href="#" id="contact-link" class="contact-link" data-i18n="contact_us">💬 Contact us</a>
+    </p>
   </footer>
+
+  <!-- Contact + share config — replace placeholders with real values once
+       you have a Tally form URL and a support Gmail. app.js reads
+       window.HALLHA_CONFIG inside initContactLink(). -->
+  <script>
+    window.HALLHA_CONFIG = {
+      tallyFormUrl: '__TALLY_FORM_URL_PLACEHOLDER__',
+      supportEmail: '__SUPPORT_EMAIL_PLACEHOLDER__',
+    };
+  </script>
+
+  <!-- Analytics (PostHog + GA4 + Cloudflare Web Analytics) — gracefully no-op
+       until each tool's ID is configured inside analytics.js. Load BEFORE
+       app.js so the global Analytics object is ready when app.js fires its
+       first events. -->
+  <script src="js/analytics.js"></script>
 
   <script src="js/hal.js"></script>
   <script src="js/i18n.js"></script>

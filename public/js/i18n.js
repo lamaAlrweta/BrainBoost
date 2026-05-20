@@ -28,6 +28,16 @@ const I18n = (() => {
       feat3_desc: 'Each round takes 15-30 seconds. No lectures. Just focused, meaningful practice.',
       footer: 'Built by students, for students. Don\'t just copy answers \u2014 understand them.',
       copyright_footer: '© 2026 Hallha. All rights reserved.',
+      // Share section (victory screen)
+      share_title: 'Tell your friends!',
+      share_subtitle: 'Help them solve their homework with Hallha',
+      share_copy: 'Copy link',
+      share_message: 'I just solved my homework with Hallha — try it! Solve it once, understand it forever.',
+      share_copied: '✓ Link copied to clipboard',
+      share_copied_for_instagram: '✓ Message copied — paste it on Instagram',
+      // Contact (footer)
+      contact_us: '💬 Contact us',
+      contact_placeholder: 'Contact form not set up yet.',
       new_challenge_badge: 'NEW CHALLENGE',
       card_title: 'Ready to learn?',
       pts: 'pts',
@@ -139,6 +149,16 @@ const I18n = (() => {
       feat3_desc: '\u062C\u0648\u0644\u0627\u062A \u0644\u0627 \u062A\u062A\u062C\u0627\u0648\u0632 15 \u0625\u0644\u0649 30 \u062B\u0627\u0646\u064A\u0629. \u0625\u064A\u0642\u0627\u0639 \u0633\u0631\u064A\u0639 \u064A\u0643\u0633\u0631 \u0627\u0644\u0645\u0644\u0644 \u0648\u064A\u062D\u0641\u0632 \u062A\u0631\u0643\u064A\u0632\u0643 \u0644\u0623\u0642\u0635\u0649 \u062D\u062F.',
       footer: 'صُنع بشغفٍ من الطلاب.. إلى الطلاب. لا تكن مجرد ناسخ، كُن صانعاً لتفوُّقك.',
       copyright_footer: '© 2026 حلّها. جميع الحقوق محفوظة.',
+      // Share section (victory screen)
+      share_title: 'شارك حلّها مع أصحابك!',
+      share_subtitle: 'ساعدهم يحلّون واجبهم ويفهمونه للأبد',
+      share_copy: 'انسخ الرابط',
+      share_message: 'حلّيت واجبي مع حلّها — جرّبه أنت كمان! حلّها مرة، افهمها للأبد.',
+      share_copied: '✓ تم نسخ الرابط',
+      share_copied_for_instagram: '✓ تم نسخ الرسالة — ألصقها في إنستغرام',
+      // Contact (footer)
+      contact_us: '💬 تواصل معنا',
+      contact_placeholder: 'نموذج التواصل لم يُهيَّأ بعد.',
       pts: '\u0646\u0642\u0637\u0629',
       streak: '\u0633\u0644\u0633\u0644\u0629',
       demo_mode: '\u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u062A\u062C\u0631\u064A\u0628\u064A',
