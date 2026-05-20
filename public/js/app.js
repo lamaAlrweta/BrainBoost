@@ -1021,8 +1021,10 @@ const App = (() => {
       if (e.key === 'Escape' && !backdrop.hidden) closeModal();
     });
 
-    // Submit → opens mailto with everything pre-filled
-    form?.addEventListener('submit', (e) => {
+    // Submit → POST to /api/contact (real async send via Resend).
+    // Falls back to mailto: only if the backend is unavailable, so users are
+    // never stranded — but the happy path is direct send.
+    form?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = (document.getElementById('contact-name').value || '').trim();
       const email = (document.getElementById('contact-email').value || '').trim();
@@ -1034,24 +1036,76 @@ const App = (() => {
         return;
       }
 
+      const submitBtn = form.querySelector('.contact-submit');
+      const originalLabel = submitBtn?.innerHTML;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = t('contact_submit_sending');
+      }
+
+      const lang = (typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en';
+
+      try {
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name, email, type, message, lang,
+            page: window.location.href,
+            userAgent: navigator.userAgent.slice(0, 200),
+          }),
+        });
+
+        if (res.ok) {
+          // ✅ Real send succeeded — student stays in-app, sees success toast,
+          // modal closes. Their email never opens.
+          if (typeof Analytics !== 'undefined') {
+            Analytics.track('contact_form_submitted', { type, has_name: !!name, method: 'api' });
+          }
+          showContactToast(t('contact_send_success'));
+          setTimeout(closeModal, 1800);
+          form.reset();
+          return;
+        }
+
+        // Backend isn't fully configured yet (RESEND_API_KEY missing) →
+        // fall back to mailto: so the user still has SOME way to send
+        if (res.status === 503) {
+          fallbackToMailto(name, email, type, message, lang);
+          return;
+        }
+
+        // Other error — show error toast, let them retry
+        showContactToast(t('contact_send_error'));
+      } catch (err) {
+        // Network error — fall back to mailto so the message isn't lost
+        fallbackToMailto(name, email, type, message, lang);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalLabel;
+        }
+      }
+    });
+
+    // Legacy mailto: path — only used if the /api/contact endpoint is not
+    // available (e.g. backend not yet configured with a Resend key).
+    function fallbackToMailto(name, email, type, message, lang) {
       const subject = `[Hallha · ${type}] from ${name || 'a student'}`;
       const body =
         `Type: ${type}\n` +
         `From: ${name || '(no name)'} <${email}>\n` +
         `\n--- Message ---\n${message}\n\n` +
-        `--- Meta ---\nPage: ${window.location.href}\nLang: ${(typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en'}\nDevice: ${navigator.userAgent.slice(0, 100)}`;
-
+        `--- Meta ---\nPage: ${window.location.href}\nLang: ${lang}\nDevice: ${navigator.userAgent.slice(0, 100)}`;
       window.location.href =
         `mailto:${supportMail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
       if (typeof Analytics !== 'undefined') {
-        Analytics.track('contact_form_submitted', { type, has_name: !!name });
+        Analytics.track('contact_form_submitted', { type, has_name: !!name, method: 'mailto_fallback' });
       }
-
       showContactToast(t('contact_submit_success'));
       setTimeout(closeModal, 1800);
       form.reset();
-    });
+    }
 
     // Copy email button
     copyBtn?.addEventListener('click', async () => {

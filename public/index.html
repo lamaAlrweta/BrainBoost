@@ -214,7 +214,7 @@
       backdrop.addEventListener('click', function(e) { if (e.target === backdrop) close(); });
       document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && !backdrop.hidden) close(); });
 
-      form && form.addEventListener('submit', function(e) {
+      form && form.addEventListener('submit', async function(e) {
         e.preventDefault();
         const name = (document.getElementById('contact-name').value || '').trim();
         const email = (document.getElementById('contact-email').value || '').trim();
@@ -226,21 +226,49 @@
           return;
         }
 
-        const subject = '[Hallha · ' + type + '] from ' + (name || 'a student');
-        const body =
-          'Type: ' + type + '\n' +
-          'From: ' + (name || '(no name)') + ' <' + email + '>\n' +
-          '\n--- Message ---\n' + message + '\n\n' +
-          '--- Meta ---\nPage: ' + window.location.href +
-          '\nLang: ' + ((typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en') +
-          '\nDevice: ' + navigator.userAgent.slice(0, 100);
+        const submitBtn = form.querySelector('.contact-submit');
+        const originalLabel = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = tr('contact_submit_sending', 'Sending…'); }
 
-        window.location.href = 'mailto:' + supportMail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+        const lang = (typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en';
 
-        if (typeof Analytics !== 'undefined') Analytics.track('contact_form_submitted', { type: type, has_name: !!name, from_page: 'landing' });
-        showToast(tr('contact_submit_success', '✓ Opening your email app…'));
-        setTimeout(close, 1800);
-        form.reset();
+        function fallback() {
+          const subject = '[Hallha · ' + type + '] from ' + (name || 'a student');
+          const body =
+            'Type: ' + type + '\n' +
+            'From: ' + (name || '(no name)') + ' <' + email + '>\n' +
+            '\n--- Message ---\n' + message + '\n\n' +
+            '--- Meta ---\nPage: ' + window.location.href +
+            '\nLang: ' + lang +
+            '\nDevice: ' + navigator.userAgent.slice(0, 100);
+          window.location.href = 'mailto:' + supportMail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+          if (typeof Analytics !== 'undefined') Analytics.track('contact_form_submitted', { type: type, has_name: !!name, from_page: 'landing', method: 'mailto_fallback' });
+          showToast(tr('contact_submit_success', '✓ Opening your email app…'));
+          setTimeout(close, 1800);
+          form.reset();
+        }
+
+        try {
+          const res = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, email: email, type: type, message: message, lang: lang, page: window.location.href, userAgent: navigator.userAgent.slice(0, 200) })
+          });
+          if (res.ok) {
+            if (typeof Analytics !== 'undefined') Analytics.track('contact_form_submitted', { type: type, has_name: !!name, from_page: 'landing', method: 'api' });
+            showToast(tr('contact_send_success', '✓ Message sent — thank you!'));
+            setTimeout(close, 1800);
+            form.reset();
+          } else if (res.status === 503) {
+            fallback();  // Backend not configured yet — graceful degradation
+          } else {
+            showToast(tr('contact_send_error', '⚠ Could not send. Please try again or copy our email.'));
+          }
+        } catch (err) {
+          fallback();  // Network failure — don't lose the message
+        } finally {
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = originalLabel; }
+        }
       });
 
       copyBtn && copyBtn.addEventListener('click', function() {
