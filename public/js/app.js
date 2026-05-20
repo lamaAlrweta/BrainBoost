@@ -980,40 +980,103 @@ const App = (() => {
   }
 
   // ========================================
-  // Contact link — opens Tally form (or mailto if form URL is a placeholder)
+  // Contact modal — opens when the "Contact us" link is clicked.
   // ========================================
-  function initContactLink() {
+  // Form submit pre-fills a mailto: to support@hallha.com so the message
+  // lands in your inbox (via Cloudflare Email Routing forwarding) without
+  // needing any external SaaS form provider.
+  function initContactModal() {
     const link = document.getElementById('contact-link');
-    if (!link) return;
+    const backdrop = document.getElementById('contact-modal-backdrop');
+    if (!link || !backdrop) return;
 
-    // Read config from the data attributes on <html> (set via window vars below)
-    const tallyUrl   = window.HALLHA_CONFIG?.tallyFormUrl || '';
-    const supportMail = window.HALLHA_CONFIG?.supportEmail || '';
+    const closeBtn = document.getElementById('contact-modal-close');
+    const form = document.getElementById('contact-form');
+    const copyBtn = document.getElementById('contact-copy-email');
+    const toast = document.getElementById('contact-toast');
+    const supportMail = (window.HALLHA_CONFIG && window.HALLHA_CONFIG.supportEmail) || 'support@hallha.com';
+
+    function openModal() {
+      backdrop.hidden = false;
+      // Defer focus so the close button doesn't steal focus from a typing user
+      setTimeout(() => document.getElementById('contact-email')?.focus(), 50);
+      if (typeof Analytics !== 'undefined') {
+        Analytics.track('contact_modal_opened');
+      }
+    }
+    function closeModal() {
+      backdrop.hidden = true;
+    }
 
     link.addEventListener('click', (e) => {
       e.preventDefault();
-      if (typeof Analytics !== 'undefined') {
-        Analytics.track('contact_clicked', {
-          method: tallyUrl ? 'tally_form' : 'mailto',
-        });
+      openModal();
+    });
+    closeBtn?.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', (e) => {
+      // Click outside the modal box closes it
+      if (e.target === backdrop) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !backdrop.hidden) closeModal();
+    });
+
+    // Submit → opens mailto with everything pre-filled
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = (document.getElementById('contact-name').value || '').trim();
+      const email = (document.getElementById('contact-email').value || '').trim();
+      const type = document.getElementById('contact-type').value || 'other';
+      const message = (document.getElementById('contact-message').value || '').trim();
+
+      if (!email || !message) {
+        showContactToast(t('contact_validation_error'));
+        return;
       }
 
-      if (tallyUrl && !tallyUrl.startsWith('__')) {
-        window.open(tallyUrl, '_blank', 'noopener');
-      } else if (supportMail && !supportMail.startsWith('__')) {
-        window.location.href = `mailto:${supportMail}?subject=${encodeURIComponent('Hallha — feedback')}`;
-      } else {
-        // Both placeholders — silent fallback (config not done yet)
-        alert(t('contact_placeholder'));
+      const subject = `[Hallha · ${type}] from ${name || 'a student'}`;
+      const body =
+        `Type: ${type}\n` +
+        `From: ${name || '(no name)'} <${email}>\n` +
+        `\n--- Message ---\n${message}\n\n` +
+        `--- Meta ---\nPage: ${window.location.href}\nLang: ${(typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en'}\nDevice: ${navigator.userAgent.slice(0, 100)}`;
+
+      window.location.href =
+        `mailto:${supportMail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+      if (typeof Analytics !== 'undefined') {
+        Analytics.track('contact_form_submitted', { type, has_name: !!name });
       }
+
+      showContactToast(t('contact_submit_success'));
+      setTimeout(closeModal, 1800);
+      form.reset();
     });
+
+    // Copy email button
+    copyBtn?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(supportMail);
+        showContactToast(t('contact_copied'));
+        if (typeof Analytics !== 'undefined') {
+          Analytics.track('contact_email_copied');
+        }
+      } catch (_) { /* ignore */ }
+    });
+
+    function showContactToast(text) {
+      if (!toast) return;
+      toast.textContent = text;
+      toast.classList.add('visible');
+      setTimeout(() => toast.classList.remove('visible'), 2400);
+    }
   }
 
-  // Hook initContactLink into the page lifecycle (runs once DOM is ready)
+  // Hook into the page lifecycle (DOM-ready)
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initContactLink);
+    document.addEventListener('DOMContentLoaded', initContactModal);
   } else {
-    initContactLink();
+    initContactModal();
   }
 
   return { init };

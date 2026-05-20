@@ -533,10 +533,15 @@ body {
   font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
 }
 
-/* Contact link in the footer */
-.contact-line {
-  margin-top: 8px;
+/* Contact link + email in the footer */
+.footer-contact {
+  margin-top: 10px;
   font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
 }
 .contact-link {
   color: var(--primary);
@@ -551,7 +556,219 @@ body {
   background: rgba(232, 89, 106, 0.08);
   transform: translateY(-1px);
 }
-[dir="rtl"] .contact-link {
+.footer-sep {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+.footer-email {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.footer-email:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--primary);
+}
+[dir="rtl"] .contact-link,
+[dir="rtl"] .footer-email {
+  font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
+}
+
+/* ========================================
+   Contact modal — opens from "Contact us" footer link.
+   Form pre-fills a mailto: to support@hallha.com on submit.
+   ======================================== */
+.contact-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 31, 61, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: contactFadeIn 0.18s ease-out;
+}
+.contact-modal-backdrop[hidden] {
+  display: none;
+}
+@keyframes contactFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.contact-modal {
+  background: var(--bg-card);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+  padding: 28px 24px 20px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: contactSlideUp 0.22s ease-out;
+}
+@keyframes contactSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.contact-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.contact-modal-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text);
+}
+[dir="rtl"] .contact-modal-close {
+  right: auto;
+  left: 14px;
+}
+.contact-modal-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 6px;
+  color: var(--text);
+}
+.contact-modal-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0 0 18px;
+  line-height: 1.55;
+}
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.contact-field label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.contact-field input,
+.contact-field select,
+.contact-field textarea {
+  font: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-input);
+  color: var(--text);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  resize: vertical;
+}
+.contact-field input:focus,
+.contact-field select:focus,
+.contact-field textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(232, 89, 106, 0.12);
+}
+.contact-submit {
+  margin-top: 4px;
+  background: linear-gradient(135deg, var(--primary) 0%, #f97066 100%);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.contact-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(232, 89, 106, 0.3);
+}
+.contact-submit:active {
+  transform: translateY(0);
+}
+
+.contact-or {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.contact-direct-email {
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg-input);
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.contact-copy {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.contact-copy:hover {
+  background: white;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.contact-toast {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #16a34a;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  min-height: 18px;
+}
+.contact-toast.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[dir="rtl"] .contact-modal-title,
+[dir="rtl"] .contact-modal-sub,
+[dir="rtl"] .contact-field label,
+[dir="rtl"] .contact-field input,
+[dir="rtl"] .contact-field select,
+[dir="rtl"] .contact-field textarea,
+[dir="rtl"] .contact-submit,
+[dir="rtl"] .contact-or,
+[dir="rtl"] .contact-copy {
   font-family: 'IBM Plex Sans Arabic', 'Droid Arabic Kufi', sans-serif;
 }
 
