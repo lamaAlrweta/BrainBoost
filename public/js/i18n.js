@@ -32,7 +32,7 @@ const I18n = (() => {
       share_title: 'Tell your friends!',
       share_subtitle: 'Help them solve their homework with Hallha',
       share_copy: 'Copy',
-      share_message: 'I just solved my homework with Hallha — try it! Solve it once, understand it forever.',
+      share_message: 'Stop memorizing answers. Try Hallha — actually understand it the first time.',
       share_copied: '✓ Link copied to clipboard',
       share_copied_for_instagram: '✓ Message copied — paste it on Instagram',
       // Contact (footer + modal)
@@ -175,7 +175,7 @@ const I18n = (() => {
       share_title: 'شارك حلّها مع أصحابك!',
       share_subtitle: 'ساعدهم يحلّون واجبهم ويفهمونه للأبد',
       share_copy: 'نسخ',
-      share_message: 'حلّيت واجبي مع حلّها — جرّبه أنت كمان! حلّها مرة، افهمها للأبد.',
+      share_message: 'بطّل تحفظ الإجابات. جرّب حلّها — تفهم الواجب من أول مرة.',
       share_copied: '✓ تم نسخ الرابط',
       share_copied_for_instagram: '✓ تم نسخ الرسالة — ألصقها في إنستغرام',
       // Contact (footer + modal)
