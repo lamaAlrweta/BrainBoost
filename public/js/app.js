@@ -1036,6 +1036,13 @@ const App = (() => {
         return;
       }
 
+      // Client-side email format check (basic but catches the common case)
+      // — same regex used server-side, so what passes here will pass there.
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showContactToast(t('contact_invalid_email'));
+        return;
+      }
+
       const submitBtn = form.querySelector('.contact-submit');
       const originalLabel = submitBtn?.innerHTML;
       if (submitBtn) {
@@ -1075,8 +1082,16 @@ const App = (() => {
           return;
         }
 
-        // Other error — show error toast, let them retry
-        showContactToast(t('contact_send_error'));
+        // Parse server error code → show a specific, actionable message
+        // instead of a generic "Send failed" toast.
+        let errorBody = {};
+        try { errorBody = await res.json(); } catch (_) {}
+        const errKey = errorBody.error;
+        let msg;
+        if (errKey === 'invalid_email')   msg = t('contact_invalid_email');
+        else if (errKey === 'missing_fields') msg = t('contact_missing_fields');
+        else msg = t('contact_send_error');
+        showContactToast(msg);
       } catch (err) {
         // Network error — fall back to mailto so the message isn't lost
         fallbackToMailto(name, email, type, message, lang);

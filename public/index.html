@@ -133,9 +133,9 @@
         <div class="contact-field">
           <label for="contact-type" data-i18n="contact_type">Type</label>
           <select id="contact-type" name="type">
-            <option value="bug" data-i18n="contact_type_bug">🐛 Bug / problem</option>
-            <option value="feedback" data-i18n="contact_type_feedback">💡 Feedback / idea</option>
-            <option value="question" data-i18n="contact_type_question">❓ Question</option>
+            <option value="bug" data-i18n="contact_type_bug">Bug / problem</option>
+            <option value="feedback" data-i18n="contact_type_feedback">Feedback / idea</option>
+            <option value="question" data-i18n="contact_type_question">Question</option>
             <option value="other" data-i18n="contact_type_other">Other</option>
           </select>
         </div>
@@ -226,6 +226,12 @@
           return;
         }
 
+        // Client-side email format check (matches the server's regex)
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showToast(tr('contact_invalid_email', 'Please enter a valid email address.'));
+          return;
+        }
+
         const submitBtn = form.querySelector('.contact-submit');
         const originalLabel = submitBtn ? submitBtn.innerHTML : '';
         if (submitBtn) { submitBtn.disabled = true; submitBtn.innerHTML = tr('contact_submit_sending', 'Sending…'); }
@@ -262,7 +268,15 @@
           } else if (res.status === 503) {
             fallback();  // Backend not configured yet — graceful degradation
           } else {
-            showToast(tr('contact_send_error', '⚠ Could not send. Please try again or copy our email.'));
+            // Parse server error → show a specific message
+            let errBody = {};
+            try { errBody = await res.json(); } catch (_) {}
+            const errKey = errBody.error;
+            let msg;
+            if (errKey === 'invalid_email')        msg = tr('contact_invalid_email',   'Please enter a valid email address.');
+            else if (errKey === 'missing_fields')  msg = tr('contact_missing_fields',  'Please fill in your email and message.');
+            else                                   msg = tr('contact_send_error',      '⚠ Could not send. Please try again or copy our email.');
+            showToast(msg);
           }
         } catch (err) {
           fallback();  // Network failure — don't lose the message
