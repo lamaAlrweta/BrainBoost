@@ -911,7 +911,7 @@ const App = (() => {
   }
 
   async function handleShareClick(platform) {
-    const shareUrl = 'https://hallha-ai.pages.dev/';
+    const shareUrl = 'https://hallha.com/';
     const lang = (typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en';
     const message = t('share_message');         // localized pre-filled text
     const fullText = `${message} ${shareUrl}`;
