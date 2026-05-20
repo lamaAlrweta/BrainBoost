@@ -778,48 +778,63 @@ body {
    ======================================== */
 .share-section {
   margin: 24px auto 16px;
-  padding: 20px 18px;
+  padding: 18px 16px;
   background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 100%);
   border: 1px solid #fde68a;
   border-radius: 16px;
   text-align: center;
   max-width: 480px;
 }
+
+/* Title — flexbox so 🎉 emoji always sits on the START side (right in
+   RTL, left in LTR) without bidi quirks. */
 .share-title {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   margin-bottom: 4px;
   color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
+.share-title-emoji {
+  font-size: 19px;
+  line-height: 1;
+}
+
 .share-subtitle {
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--text-muted);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 .share-buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
   flex-wrap: wrap;
 }
+/* Chip-style buttons — smaller, lighter, easier to scan. */
 .share-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
+  gap: 5px;
+  padding: 6px 12px;
   border: 1.5px solid transparent;
   border-radius: 999px;
   background: white;
   color: var(--text);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
-.share-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.share-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.09); }
 .share-btn:active { transform: translateY(0); }
-.share-btn-icon { font-size: 16px; line-height: 1; }
+.share-btn-icon { font-size: 13px; line-height: 1; }
+.share-btn-label { font-size: 12px; }
 .share-whatsapp:hover  { border-color: #25D366; }
 .share-instagram:hover { border-color: #E1306C; }
 .share-twitter:hover   { border-color: #000000; }
