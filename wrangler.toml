@@ -9,3 +9,13 @@ pages_build_output_dir = "public"
 # create a widget. The matching TURNSTILE_SECRET_KEY is a Pages secret.
 [vars]
 TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
+
+# Cloudflare Email Service binding — lets functions/api/contact.js send
+# email via env.EMAIL.send({...}) without any external service. Requires:
+#   1. Workers Paid plan enabled on the Cloudflare account ($5/month)
+#   2. hallha.com onboarded for sending under dash → Email → Email Sending
+#      (Cloudflare auto-adds the MX/SPF/DKIM/DMARC records since DNS is here)
+# When the binding is active, env.EMAIL.send() routes through Cloudflare's
+# infrastructure end-to-end; no API keys, no third-party deps.
+[[send_email]]
+name = "EMAIL"

@@ -1,20 +1,24 @@
 // Contact form endpoint — receives the in-app contact modal submission and
-// sends a real email to support@hallha.com via Resend (https://resend.com).
+// sends a real email to support@hallha.com via Cloudflare Email Service.
 // The recipient address is configured via Cloudflare Email Routing to forward
 // to the personal Gmail, so messages land in the regular inbox.
 //
-// SETUP REQUIRED (one-time, from the dashboard):
-//   1. Sign up at https://resend.com (free tier covers 3,000 emails/mo)
-//   2. Verify the hallha.com domain (Resend gives you DNS records — since
-//      hallha.com is on Cloudflare, paste them into the Cloudflare DNS
-//      panel and they propagate in seconds).
-//   3. Create an API key (Settings → API Keys → Create).
-//   4. Set it as a Cloudflare Pages secret:
-//        npx wrangler pages secret put RESEND_API_KEY --project-name=hallha-ai
-//      (paste the re_... key when prompted)
+// Why Cloudflare Email Service instead of Resend?
+//   - Everything stays on Cloudflare (one bill, one dashboard, no API keys)
+//   - DNS records are added automatically (no manual copy-paste)
+//   - 3,000 emails/month included in the Workers Paid plan ($5/mo)
 //
-// Until RESEND_API_KEY is set, this endpoint returns a 503 so the frontend
-// falls back to the legacy mailto: flow — no users get stranded.
+// SETUP REQUIRED (one-time, from the dashboard):
+//   1. Enable Workers Paid plan: dash.cloudflare.com → Workers & Pages → Plans
+//   2. Onboard hallha.com for sending: dash.cloudflare.com → Email →
+//      Email Sending → Onboard Domain → pick hallha.com → "Add DNS records
+//      automatically". Wait ~5 min for propagation.
+//   3. Once the domain shows green ✅ "Verified", this endpoint will start
+//      sending real emails. No API key, no secret to set.
+//
+// Until the EMAIL binding is wired and the domain is verified, this endpoint
+// returns a 503 so the frontend falls back to the legacy mailto: flow — no
+// users get stranded mid-rollout.
 
 export async function onRequestPost({ request, env }) {
   let payload;
@@ -40,8 +44,9 @@ export async function onRequestPost({ request, env }) {
     return Response.json({ error: 'invalid_email' }, { status: 400 });
   }
 
-  // No Resend key configured yet → graceful 503 so frontend falls back to mailto
-  if (!env.RESEND_API_KEY) {
+  // EMAIL binding not yet wired → graceful 503 so frontend falls back to
+  // mailto: (and the user isn't stranded mid-rollout).
+  if (!env.EMAIL || typeof env.EMAIL.send !== 'function') {
     return Response.json({ error: 'service_unconfigured' }, { status: 503 });
   }
 
@@ -75,34 +80,36 @@ export async function onRequestPost({ request, env }) {
   `;
 
   try {
-    const r = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        // 'from' must be on a verified domain. noreply@hallha.com is the
-        // standard pattern for transactional sends — no inbox needed for it.
-        from: 'Hallha Contact <noreply@hallha.com>',
-        to: 'support@hallha.com',
-        reply_to: email,        // Hit "Reply" in Gmail → goes straight to student
-        subject,
-        text: textBody,
-        html: htmlBody,
-      }),
+    // Native Cloudflare Email Service binding. No API key, no fetch — the
+    // binding (configured in wrangler.toml as [[send_email]] name = "EMAIL")
+    // routes the message through Cloudflare's own SMTP infrastructure.
+    //
+    // 'from' must be on a domain you've onboarded for sending in the
+    // Cloudflare dashboard (hallha.com in our case). The 'to' address can
+    // be any verified destination configured in Email Routing — we send to
+    // support@hallha.com which Email Routing then forwards to the personal
+    // Gmail inbox. Setting replyTo to the student's email means hitting
+    // "Reply" in Gmail goes straight back to the student.
+    await env.EMAIL.send({
+      from: { email: 'noreply@hallha.com', name: 'Hallha Contact' },
+      to: 'support@hallha.com',
+      replyTo: email,
+      subject,
+      text: textBody,
+      html: htmlBody,
     });
-
-    if (!r.ok) {
-      const errText = await r.text();
-      console.error('Resend send failed:', r.status, errText.slice(0, 300));
-      return Response.json({ error: 'send_failed' }, { status: 502 });
-    }
 
     return Response.json({ ok: true });
   } catch (err) {
-    console.error('Contact endpoint exception:', err?.message);
-    return Response.json({ error: 'send_failed' }, { status: 500 });
+    // Common failure modes worth distinguishing:
+    //   - Domain not yet verified on the sending side
+    //   - 'to' address not a verified destination in Email Routing
+    //   - Workers Paid plan not active
+    //   - Rate limit / quota exceeded
+    // We log details for debugging but show a generic message to users so
+    // attackers can't probe for misconfiguration.
+    console.error('Cloudflare Email send failed:', err?.code, err?.message);
+    return Response.json({ error: 'send_failed' }, { status: 502 });
   }
 }
 
