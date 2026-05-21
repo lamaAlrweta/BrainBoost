@@ -3,19 +3,16 @@ compatibility_date = "2026-04-11"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "public"
 
+[vars]
 # Cloudflare Turnstile site key (public — safe to commit).
 # This is the Cloudflare-documented "always passes" test key. Replace it with
 # a real sitekey from dash.cloudflare.com/?to=/:account/turnstile once you
 # create a widget. The matching TURNSTILE_SECRET_KEY is a Pages secret.
-[vars]
 TURNSTILE_SITE_KEY = "1x00000000000000000000AA"
 
-# Cloudflare Email Service binding — lets functions/api/contact.js send
-# email via env.EMAIL.send({...}) without any external service. Requires:
-#   1. Workers Paid plan enabled on the Cloudflare account ($5/month)
-#   2. hallha.com onboarded for sending under dash → Email → Email Sending
-#      (Cloudflare auto-adds the MX/SPF/DKIM/DMARC records since DNS is here)
-# When the binding is active, env.EMAIL.send() routes through Cloudflare's
-# infrastructure end-to-end; no API keys, no third-party deps.
-[[send_email]]
-name = "EMAIL"
+# Cloudflare Account ID (public — safe to commit; appears in all dashboard URLs).
+# Used by functions/api/contact.js to call the Cloudflare Email Sending REST
+# API. Pages Functions can't use the native [[send_email]] binding (that's
+# Workers-only), so we authenticate with a CLOUDFLARE_EMAIL_API_TOKEN
+# secret instead — same Cloudflare Email Service, different transport.
+CLOUDFLARE_ACCOUNT_ID = "aa501d55161bdae60ae4cca0b62a890f"
