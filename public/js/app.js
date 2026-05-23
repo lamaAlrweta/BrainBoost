@@ -911,7 +911,7 @@ const App = (() => {
   }
 
   async function handleShareClick(platform) {
-    const shareUrl = 'https://hallha.com/';
+    const shareUrl = 'https://hallha.app/';
     const lang = (typeof I18n !== 'undefined' && I18n.getCurrentLang) ? I18n.getCurrentLang() : 'en';
     const message = t('share_message');         // localized pre-filled text
     const fullText = `${message} ${shareUrl}`;
@@ -982,7 +982,7 @@ const App = (() => {
   // ========================================
   // Contact modal — opens when the "Contact us" link is clicked.
   // ========================================
-  // Form submit pre-fills a mailto: to support@hallha.com so the message
+  // Form submit pre-fills a mailto: to support@hallha.app so the message
   // lands in your inbox (via Cloudflare Email Routing forwarding) without
   // needing any external SaaS form provider.
   function initContactModal() {
@@ -994,7 +994,7 @@ const App = (() => {
     const form = document.getElementById('contact-form');
     const copyBtn = document.getElementById('contact-copy-email');
     const toast = document.getElementById('contact-toast');
-    const supportMail = (window.HALLHA_CONFIG && window.HALLHA_CONFIG.supportEmail) || 'support@hallha.com';
+    const supportMail = (window.HALLHA_CONFIG && window.HALLHA_CONFIG.supportEmail) || 'support@hallha.app';
 
     function openModal() {
       backdrop.hidden = false;

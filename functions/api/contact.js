@@ -1,5 +1,5 @@
 // Contact form endpoint — receives the in-app contact modal submission and
-// sends a real email to support@hallha.com via Cloudflare Email Service's
+// sends a real email to support@hallha.app via Cloudflare Email Service's
 // REST API. The recipient address is configured via Cloudflare Email
 // Routing to forward to the personal Gmail.
 //
@@ -11,8 +11,8 @@
 // SETUP REQUIRED (one-time, from the dashboard):
 //   1. Enable Workers Paid plan: dash.cloudflare.com → Workers & Pages → Plans
 //      (required for outbound sending; 3,000 emails/month included for $5)
-//   2. Onboard hallha.com for sending: dash.cloudflare.com → Email →
-//      Email Sending → Onboard Domain → pick hallha.com → "Add DNS records
+//   2. Onboard hallha.app for sending: dash.cloudflare.com → Email →
+//      Email Sending → Onboard Domain → pick hallha.app → "Add DNS records
 //      automatically". Wait ~5 min for propagation.
 //   3. Create an API token: dash.cloudflare.com → My Profile → API Tokens →
 //      Create Token → custom token with permission
@@ -91,9 +91,9 @@ export async function onRequestPost({ request, env }) {
     // Pages Functions don't support the [[send_email]] binding.
     //
     // 'from' must be on a domain you've onboarded for sending in the
-    // Cloudflare dashboard (hallha.com in our case). The 'to' address can
+    // Cloudflare dashboard (hallha.app in our case). The 'to' address can
     // be any verified destination configured in Email Routing — we send to
-    // support@hallha.com which Email Routing then forwards to the personal
+    // support@hallha.app which Email Routing then forwards to the personal
     // Gmail inbox. reply_to is the student's email so hitting "Reply" in
     // Gmail goes straight back to the student.
     const endpoint = `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/email/sending/send`;
@@ -105,8 +105,8 @@ export async function onRequestPost({ request, env }) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: { email: 'noreply@hallha.com', name: 'Hallha Contact' },
-        to: 'support@hallha.com',
+        from: { email: 'noreply@hallha.app', name: 'Hallha Contact' },
+        to: 'support@hallha.app',
         reply_to: email,
         subject,
         text: textBody,

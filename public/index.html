@@ -8,12 +8,12 @@
 
   <!-- Canonical URL — tells search engines and link previews this is the
        real domain (not the pages.dev subdomain) -->
-  <link rel="canonical" href="https://hallha.com/">
+  <link rel="canonical" href="https://hallha.app/">
 
   <!-- Open Graph / Twitter Card meta — controls how the link preview
        looks when shared on WhatsApp, Twitter, iMessage, etc. -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://hallha.com/">
+  <meta property="og:url" content="https://hallha.app/">
   <meta property="og:title" content="حلّها — Hallha">
   <meta property="og:description" content="حلّها مرة، افهمها للأبد. منصة تعليمية ذكية للطلاب.">
   <meta property="og:site_name" content="حلّها">
@@ -107,7 +107,7 @@
       <div class="footer-contact">
         <a href="#" id="contact-link" class="contact-link" data-i18n="contact_us">💬 Contact us</a>
         <span class="footer-sep">·</span>
-        <a href="mailto:support@hallha.com" class="footer-email">support@hallha.com</a>
+        <a href="mailto:support@hallha.app" class="footer-email">support@hallha.app</a>
       </div>
     </footer>
   </div>
@@ -150,7 +150,7 @@
 
       <div class="contact-or">
         <span data-i18n="contact_or_direct">Or email us directly:</span>
-        <code class="contact-direct-email">support@hallha.com</code>
+        <code class="contact-direct-email">support@hallha.app</code>
         <button type="button" class="contact-copy" id="contact-copy-email" data-i18n="contact_copy">Copy</button>
       </div>
       <div class="contact-toast" id="contact-toast" role="status" aria-live="polite"></div>
@@ -163,7 +163,7 @@
   <script>
     window.HALLHA_CONFIG = {
       tallyFormUrl: '__TALLY_FORM_URL_PLACEHOLDER__',
-      supportEmail: 'support@hallha.com',
+      supportEmail: 'support@hallha.app',
     };
   </script>
 
@@ -186,7 +186,7 @@
       const form = document.getElementById('contact-form');
       const copyBtn = document.getElementById('contact-copy-email');
       const toast = document.getElementById('contact-toast');
-      const supportMail = (window.HALLHA_CONFIG && window.HALLHA_CONFIG.supportEmail) || 'support@hallha.com';
+      const supportMail = (window.HALLHA_CONFIG && window.HALLHA_CONFIG.supportEmail) || 'support@hallha.app';
 
       function open() {
         backdrop.hidden = false;
