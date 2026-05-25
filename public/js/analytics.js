@@ -17,8 +17,8 @@ const Analytics = (() => {
   const CONFIG = {
     // PostHog Project API Key — get at https://posthog.com/signup
     // Looks like: 'phc_AbCd...'
-    posthogKey: '__POSTHOG_KEY_PLACEHOLDER__',
-    posthogHost: 'https://eu.i.posthog.com',  // EU region for better privacy with students
+    posthogKey: 'phc_mwDsp9UAwPNJBygcVGY7B4XnXpGVoJQG4vsCmKHAhfM9',
+    posthogHost: 'https://us.i.posthog.com',  // US region (matches the project's hosted region)
 
     // Google Analytics 4 Measurement ID — get at https://analytics.google.com
     // Looks like: 'G-XXXXXXXXXX'
